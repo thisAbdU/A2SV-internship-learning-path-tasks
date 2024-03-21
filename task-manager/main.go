@@ -1,100 +1,115 @@
 package main
 
 import (
+	"context"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type task struct {
-	Id          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Status      string `json:"status"`
-	DueDate     time.Time `json:"dueDate"`
+var collection *mongo.Collection
+
+type Task struct {
+    ID          string `json:"id"`
+    Title       string `json:"title"`
+    Description string `json:"description"`
+    Status      string `json:"status"`
 }
 
-var tasks = []task{
-	{Id:"1", Title:"Studying", Description:"Study", Status:"In progress", DueDate:time.Date(2002, 12, 21, 0, 0, 0, 0, time.UTC)},
-	{Id: "2", Title: "Task 2", Description: "Second task", DueDate: time.Now().AddDate(0, 0, 1), Status: "In Progress"},
-    {Id: "3", Title: "Task 3", Description: "Third task", DueDate: time.Now().AddDate(0, 0, 2), Status: "Completed"},
-}
+func postTask(c *gin.Context) {
 
-func getTasks(c * gin.Context){
-	c.IndentedJSON(http.StatusOK, tasks)
-}
+	db := connectToDatabase()
 
-func getTasksByID(c *gin.Context)  {
-	id := c.Param("id")
-	for _, task := range tasks{
-		if task.Id == id{
-			c.IndentedJSON(http.StatusOK, task)
-			return
-		}
-	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "couldn't find id"})
-}
+	var newTask Task
 
-func updateTask(c *gin.Context)  {
-	id := c.Param("id")
-
-	var udpatedTask task
-
-	if err := c.BindJSON(&udpatedTask); err != nil{
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	}
-
-	for _, task := range tasks{
-		if task.Id == id{
-			if task.Description != ""{
-				task.Description = udpatedTask.Description
-			}
-			if task.Title != ""{
-				task.Title = udpatedTask.Title
-			}
-			if task.Status != ""{
-				task.Status = udpatedTask.Status
-			}
-
-			c.IndentedJSON(http.StatusOK, gin.H{"message": "Task updated!"})
-			return
-		}
-	}
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Task Not found"})
-
-}
-
-func deleteTask(c *gin.Context)  {
-	id := c.Param("id")
-
-	for i, task := range tasks{
-		if task.Id == id{
-			tasks = append(tasks[:i], tasks[i+1:]...)
-		}
-	}
-}
-
-func addTask(c *gin.Context) {
-
-	var newTask task
-
-	if err := c.BindJSON(&newTask); err != nil{
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	if err := c.BindJSON(&newTask); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	tasks = append(tasks, newTask)
-	c.IndentedJSON(http.StatusCreated, tasks)
-
-}
-func main()  {
-	router := gin.Default()
-	router.GET("/tasks", getTasks)
-	router.GET("/tasks/:id", getTasksByID)
-	router.PUT("/tasks/:id", updateTask)
-	router.DELETE("/tasks/:id", deleteTask)
-	router.POST("/tasks/", addTask)
+	db.Collection("task").InsertOne(context.TODO(), newTask)
 	
-	router.Run("localhost:8080")
+}
+
+func getTasks(c *gin.Context) {
+	limit := c.Query("limit")
+	sortBy := c.Query("sort_by")
+
+	var err error
+	limitInt := 10 // Default limit value
+	if limit != "" {
+		limitInt, err = strconv.Atoi(limit)
+		if err != nil || limitInt < 1 {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid limit value"})
+			return
+		}
+	}
+
+	sortByOption := 1
+	if sortBy == "desc" {
+		sortByOption = -1
+	}
+
+	var tasks []Task
+	ct, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := collection.Find(ct, bson.M{}, options.Find().SetSort(bson.D{{Key: "created_at", Value: sortByOption}}).SetLimit(int64(limitInt)))
+	if err != nil {
+		log.Fatal(err)
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve tasks"})
+		return
+	}
+	defer cursor.Close(ct)
+
+	for cursor.Next(ct) {
+		var t Task
+		if err := cursor.Decode(&t); err != nil {
+			log.Fatal(err)
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Failed to get task"})
+			return
+		}
+
+		tasks = append(tasks, t)
+	}
+
+	if err := cursor.Err(); err != nil {
+		log.Fatal(err)
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": "Error while retrieving tasks"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, tasks)
+}
+
+func getTasksByID(c *gin.Context) {
+    // Implement retrieval of a specific task by ID from MongoDB collection
+}
+
+func updateTask(c *gin.Context) {
+    // Implement updating an existing task in MongoDB collection
+}
+
+func deleteTask(c *gin.Context) {
+    // Implement deleting a task from MongoDB collection
+}
+
+
+func main() {
+    connectToDatabase()
+    router := gin.Default()
+
+    router.GET("/tasks", getTasks)
+    router.GET("/tasks/:id", getTasksByID)
+    router.PUT("/tasks/:id", updateTask)
+    router.DELETE("/tasks/:id", deleteTask)
+    router.POST("/tasks", postTask)
+
+    router.Run("localhost:8080")
 }
