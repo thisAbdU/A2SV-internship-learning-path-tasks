@@ -1,6 +1,6 @@
 package main
 
-func isPalindrome(word string) bool {
+func IsPalindrome(word string) bool {
 	if len(word) == 0{
 		return true
 	}
