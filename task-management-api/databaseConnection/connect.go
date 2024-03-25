@@ -1,15 +1,17 @@
 package main
 
 import (
-	"context"
-	"log"
+    "context"
+    "log"
 
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+    "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo/options"
 )
+
 var db *mongo.Database
-func connectToDatabase() *mongo.Database {
-	uri := "mongodb+srv://taskmanager:task123@cluster0.jkxryyl.mongodb.net/"
+
+func ConnectToDatabase() *mongo.Database {
+    uri := "mongodb+srv://taskmanager:task123@cluster0.jkxryyl.mongodb.net/"
 
     clientOptions := options.Client().ApplyURI(uri)
     client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -26,5 +28,5 @@ func connectToDatabase() *mongo.Database {
 
     db = client.Database("taskManagementDatabase")
 
-	return db
+    return db
 }
