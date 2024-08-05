@@ -1,32 +1,24 @@
 package main
 
+// import the packages for the tasks
 import (
-	"github.com/thisAbdu/A2SV-internship-learning-path-tasks/task1/Grade-calculator/gradecalculator"
+	// "A2SV-internship-learning-path-tasks/task1/Grade-calculator"
+	// "A2SV-internship-learning-path-tasks/task2"
+	// "A2SV-internship-learning-path-tasks/task3/check-palindrome"
 )
 
 func main() {
-    gradecalculator.GradeCalculator()
+
+	//to check taks 1, uncomment the following line
+
+    // grade_calculator.GradeCalculator()
+
+	//to check task 2, uncomment the following lines
+
+	// frequency.RunLetterFrequency()
+	// frequency.RunWordFrequency()
+
+	//to check task 3, uncomment the following line
+
+	// palindrome.CheckPalindrome()
 }
-
-// func main()  {
-// 	var phrase string
-
-// 	flag.StringVar(&phrase, "phrase", "Enter a phrase", "A phrase to determine the letter/word frequency")
-// 	flag.Parse()
-
-// 	if phrase == " "{
-// 		os.Exit(1)
-// 	}
-// }
-
-// func main() {
-// 	var word string
-
-// 	flag.StringVar(&word, "word", "Enter a word", "The word to check if it's a palindrome")
-// 	flag.Parse()
-// 	if word == ""{
-// 		os.Exit(1)
-// 	}
-
-// 	IsPalindrome(word)
-// }
