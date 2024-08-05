@@ -15,11 +15,11 @@ type Task struct {
 }
 
 type TaskRepository interface {
-	GetTasks(ctx context.Context, param string) ([]Task, error)
-	GetTaskByID(ctx context.Context, id string) (*model.TaskInfo, error)
+	GetTasks(ctx context.Context, param string) ([]*model.TaskInfo, error)
+	GetTaskByID(ctx context.Context, id string) (*Task, error)
 	UpdateTask(ctx context.Context, id string, updatedTask Task) error
 	DeleteTask(ctx context.Context, id string) error
-	CreateTask(nctx context.Context, ewTask Task) error
+	CreateTask(nctx context.Context, newTask Task) error
 }
 
 type TaskUsecase interface {

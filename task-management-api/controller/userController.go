@@ -89,3 +89,10 @@ func (uc *usercontroller) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
 }
 
+func (uc *usercontroller) Register(c *gin.Context){
+
+}
+
+func (uc *usercontroller) Login(c *gin.Context){
+	
+}

@@ -1,6 +1,9 @@
 package entities
 
-import "context"
+import (
+	"context"
+	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/model"
+)
 
 type User struct {
 	ID       string `json:"id" bson:"_id"`
@@ -13,7 +16,7 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, id string) (*User, error)
 	UpdateUser(ctx context.Context, id string, updatedUser User) error
 	DeleteUser(ctx context.Context, id string) error
-	CreateUser(ctx context.Context, newUser User) error
+	CreateUser(ctx context.Context, newUser User) (*model.UserInfo, error)
 }
 
 type UserUsecase interface {

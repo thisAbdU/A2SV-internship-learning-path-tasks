@@ -4,6 +4,7 @@ import (
 	"context"
 	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/config"
 	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/entities"
+
 )
 
 type UserUsecase struct {
@@ -53,7 +54,7 @@ func (uc *UserUsecase) DeleteUser(id string) error {
 }
 
 func (uc *UserUsecase) CreateUser(newUser entities.User) error {
-	err := uc.userRepository.CreateUser(context.Background(), newUser)
+	_, err := uc.userRepository.CreateUser(context.Background(), newUser)
 	if err != nil {
 		return err
 	}

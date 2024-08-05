@@ -8,6 +8,7 @@ import (
 )
 
 type Environment struct {
+	TokenSecret string
 	DbURL string
 	DbName string
 	JwtSecret   string
@@ -27,3 +28,4 @@ func NewEnvironment()(*Environment, error) {
 		Port: os.Getenv("Port"),
 	}, err
 }
+

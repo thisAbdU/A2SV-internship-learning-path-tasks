@@ -1,4 +1,4 @@
-package main
+package grade_calculator
 
 import "fmt"
 
@@ -11,7 +11,7 @@ func averageCalculator(grades []int) float32 {
     return float32(totalSum) / float32(len(grades))
 }
 
-func gradeCalculator(){
+func GradeCalculator(){
     // Variables to store user input
     var name string
     var noOfSubjects int

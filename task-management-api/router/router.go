@@ -26,7 +26,7 @@ func NewAuthRouter(environment *config.Environment, timeout time.Duration, db *m
 func taskRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
 
 	taskRepository := repository.NewTaskRepository(db, "task")
-	taskUseCase := usecase.NewTaskUsecase(environment, taskRepository)
+	taskUseCase := usecase.NewTaskUsecase(environment,&taskRepository)
 	taskController := controller.NewTaskController(*environment, *taskUseCase)
 	r.GET("/", taskController.GetTasks)
 	r.GET("/:id", taskController.GetTaskByID)
@@ -38,8 +38,8 @@ func NewRouter(environment *config.Environment, timeout time.Duration, db *mongo
 	authRouter := r.Group("/auth")
 	NewAuthRouter(environment, timeout, db, authRouter)
 
-	taskRouter := r.Group("/task")
-	taskRouter(environment, timeout, db, taskRouter)
+	taskGroup := r.Group("/task")
+	taskRouter(environment, timeout, db, taskGroup)
 }
 
 

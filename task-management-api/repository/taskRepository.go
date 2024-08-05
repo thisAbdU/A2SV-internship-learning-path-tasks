@@ -17,7 +17,7 @@ type taskRepository struct {
 	collection string
 }
 
-func NewTaskRepository(database *mongo.Database, collection string) *taskRepository {
+func NewTaskRepository(database *mongo.Database, collection string) entities.TaskRepository{
 	return &taskRepository{
 		database:   database,
 		collection: collection,

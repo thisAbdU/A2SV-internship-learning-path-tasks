@@ -1,4 +1,5 @@
-package main
+package Frequency
+
 import (
     "strings"
 )

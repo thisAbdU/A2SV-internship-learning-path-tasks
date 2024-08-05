@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/entities"
+	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/model"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -99,12 +100,12 @@ func (ur *userRepository) DeleteUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (ur *userRepository) CreateUser(ctx context.Context, newUser entities.User) error {
+func (ur *userRepository) CreateUser(ctx context.Context, newUser entities.User) (*model.UserInfo, error) {
 	_, err := ur.database.Collection(ur.collection).InsertOne(ctx, newUser)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return nil, err
 }
 

@@ -14,7 +14,7 @@ type TaskUsecase struct {
 	contextTimeout time.Duration
 }
 
-func NewTaskUsecase(environment config.Environment, taskRepository *entities.TaskRepository) *TaskUsecase {
+func NewTaskUsecase(environment *config.Environment, taskRepository *entities.TaskRepository) *TaskUsecase {
 	return &TaskUsecase{
 		TaskRepository: * taskRepository,
 		contextTimeout: 3 * time.Second,
@@ -55,7 +55,6 @@ func (uc *TaskUsecase) GetTaskByID(id string) (*model.TaskInfo, error) {
 	taskInfo := &model.TaskInfo{
 		Title:       taskEntity.Title,
 		Description: taskEntity.Description,
-		DueDate:     taskEntity.DueDate,
 	}
 
 	return taskInfo, nil

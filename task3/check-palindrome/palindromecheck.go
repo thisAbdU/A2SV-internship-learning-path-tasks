@@ -1,4 +1,4 @@
-package main
+package palindrome
 
 func IsPalindrome(word string) bool {
 	if len(word) == 0{
