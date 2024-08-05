@@ -11,14 +11,14 @@ func main() {
 
 	//to check taks 1, uncomment the following line
 
-    // grade_calculator.GradeCalculator()
+    //grade_calculator.GradeCalculator()
 
 	//to check task 2, uncomment the following lines
 
-	// frequency.RunLetterFrequency()
-	// frequency.RunWordFrequency()
+	//frequency.RunLetterFrequency()
+	//frequency.RunWordFrequency()
 
 	//to check task 3, uncomment the following line
 
-	// palindrome.CheckPalindrome()
+	//palindrome.CheckPalindrome()
 }
