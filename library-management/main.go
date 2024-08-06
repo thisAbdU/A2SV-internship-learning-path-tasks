@@ -11,7 +11,7 @@ func main() {
 	controller := controllers.NewLibraryController(library)
 
 	for {
-		fmt.Println("\nWelcom Library Management System")
+		fmt.Println("\n Welcom Library Management System")
 		fmt.Println("1. Add Book")
 		fmt.Println("2. Remove Book")
 		fmt.Println("3. Borrow Book")
@@ -19,6 +19,7 @@ func main() {
 		fmt.Println("5. List Available Books")
 		fmt.Println("6. List Borrowed Books")
 		fmt.Println("7. Exit")
+		fmt.Println()
 
 		fmt.Print("Enter your choice: ")
 		var choice int

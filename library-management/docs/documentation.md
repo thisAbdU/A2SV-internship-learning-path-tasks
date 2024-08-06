@@ -17,8 +17,9 @@ The Library Management System is a command-line application that allows you to m
    Clone the repository to your local machine:
 
    ```sh
-   git clone https://github.com/yourusername/library-management-system.git
-   cd library-management-system
+   git clone https://github.com/thisAbdU/A2SV-internship-learning-path-tasks.git
+
+   cd library-management
    ```
 
 2. **Build the Application**
@@ -26,7 +27,9 @@ The Library Management System is a command-line application that allows you to m
    Build the Go application:
 
    ```sh
+
    go build -o library-management
+
    ```
 
 3. **Run the Application**
@@ -34,6 +37,7 @@ The Library Management System is a command-line application that allows you to m
    Run the built application:
 
    ```sh
+
    ./library-management
    ```
 
@@ -50,6 +54,7 @@ Library Management System
 5. List Available Books
 6. List Borrowed Books
 7. Exit
+
 Enter your choice:
 ```
 
@@ -60,6 +65,7 @@ Enter your choice:
    Adds a book to the library.
 
    - **Prompt**: Enter Book ID, Enter Book Title, Enter Book Author
+
    - **Example**:
 
      ```
