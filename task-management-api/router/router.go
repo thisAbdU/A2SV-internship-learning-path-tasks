@@ -12,13 +12,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-
-
-
 func NewAuthRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
 	userRepository := repository.NewUserRepository(db, "user")
 	userUseCase := usecase.NewUserUsecase(environment, userRepository)
 	userController := controller.NewUserController(*environment, *userUseCase)
+
 	r.POST("/register", userController.Register)
 	r.POST("/login", userController.Login)
 }
@@ -28,6 +26,7 @@ func taskRouter(environment *config.Environment, timeout time.Duration, db *mong
 	taskRepository := repository.NewTaskRepository(db, "task")
 	taskUseCase := usecase.NewTaskUsecase(environment,&taskRepository)
 	taskController := controller.NewTaskController(*environment, *taskUseCase)
+
 	r.GET("/", taskController.GetTasks)
 	r.GET("/:id", taskController.GetTaskByID)
 	r.PUT("/:id", taskController.UpdateTask)
@@ -48,6 +47,7 @@ func userRouter(environment *config.Environment, timeout time.Duration, db *mong
 	userRepository := repository.NewUserRepository(db, "user")
 	userUseCase := usecase.NewUserUsecase(environment, userRepository)
 	userController := controller.NewUserController(*environment, *userUseCase)
+
 	r.GET("/", userController.GetUsers)
 	r.GET("/:id", userController.GetUserByID)
 	r.PUT("/:id", userController.UpdateUser)
