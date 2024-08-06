@@ -8,11 +8,9 @@ import (
 )
 
 type Environment struct {
-	TokenSecret string
+	JwtKey string
 	DbURL string
 	DbName string
-	JwtSecret   string
-	JwtExpiration int
 	Port string
 }
 
@@ -26,6 +24,7 @@ func NewEnvironment()(*Environment, error) {
 		DbURL: os.Getenv("DbURL"),
 		DbName: os.Getenv("DbName"),
 		Port: os.Getenv("Port"),
+		JwtKey: os.Getenv("jwtKey"),
 	}, err
 }
 

@@ -1,11 +1,10 @@
 package router
 
 import (
-
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/config"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/controller"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/repository"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/usecase"
+	"task-management-api/config"
+	"task-management-api/controller"
+	"task-management-api/repository"
+	"task-management-api/usecase"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -33,14 +32,6 @@ func taskRouter(environment *config.Environment, timeout time.Duration, db *mong
 	r.DELETE("/:id", taskController.DeleteTask)
 }
 
-func NewRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.Engine) {
-	authRouter := r.Group("/auth")
-	NewAuthRouter(environment, timeout, db, authRouter)
-
-	taskGroup := r.Group("/task")
-	taskRouter(environment, timeout, db, taskGroup)
-}
-
 
 func userRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
 
@@ -52,5 +43,13 @@ func userRouter(environment *config.Environment, timeout time.Duration, db *mong
 	r.GET("/:id", userController.GetUserByID)
 	r.PUT("/:id", userController.UpdateUser)
 	r.DELETE("/:id", userController.DeleteUser)
+}
+
+func NewRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.Engine) {
+	authRouter := r.Group("/auth")
+	NewAuthRouter(environment, timeout, db, authRouter)
+
+	taskGroup := r.Group("/task")
+	taskRouter(environment, timeout, db, taskGroup)
 }
 

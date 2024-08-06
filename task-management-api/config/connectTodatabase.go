@@ -9,54 +9,33 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
 var (
-
     mongoClient *mongo.Client
     once        sync.Once
 )
 
-func getMongoClient(uri string, db string) (*mongo.Database, error) {
+func GetMongoClient(env *Environment) (*mongo.Database, error) {
+    var err error
+
     once.Do(func() {
-        clientOpitons := options.Client().ApplyURI(uri)
-        c, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+        clientOptions := options.Client().ApplyURI(env.DbURL)
+        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
         defer cancel()
 
-        client, err := mongo.Connect(c, clientOpitons)
+        client, err := mongo.Connect(ctx, clientOptions)
         if err != nil {
             log.Fatal(err)
         }
 
-        err = client.Ping(c, nil)
+        err = client.Ping(ctx, nil)
         if err != nil {
             log.Println("Failed to connect to MongoDB")
             log.Fatal(err)
         }
 
         log.Println("Connected to MongoDB")
-
+        mongoClient = client
     })
 
-    return mongoClient.Database(db), nil
+    return mongoClient.Database(env.DbName), err
 }
-
-// func ConnectToDatabase() *mongo.Database {
-//     uri := "mongodb+srv://taskmanager:task123@cluster0.jkxryyl.mongodb.net/"
-
-//     clientOptions := options.Client().ApplyURI(uri)
-//     client, err := mongo.Connect(context.TODO(), clientOptions)
-//     if err != nil {
-//         log.Fatal(err)
-//     }
-
-//     err = client.Ping(context.TODO(), nil)
-//     if err != nil {
-//         log.Fatal(err)
-//     }
-
-//     log.Println("Connected to MongoDB")
-
-//     db = client.Database("taskManagementDatabase")
-
-//     return db
-// }

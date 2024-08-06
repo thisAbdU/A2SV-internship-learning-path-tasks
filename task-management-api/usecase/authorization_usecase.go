@@ -3,10 +3,10 @@ package usecase
 import (
 	"context"
 	"errors"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/config"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/entities"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/model"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/middleware"
+	"task-management-api/config"
+	"task-management-api/domain/entities"
+	"task-management-api/domain/model"
+	"task-management-api/middleware"
 )
 
 type AuthorizationUsecase struct {
@@ -39,28 +39,25 @@ func (uc *AuthorizationUsecase) Login(currUser *entities.AuthenticatedUser, user
 
 
 func (uc *AuthorizationUsecase) Register(currUser *entities.AuthenticatedUser, userCreate *model.UserCreate, param any) (*model.UserInfo, string, error) {
-    // Validate user input 
     if userCreate == nil || userCreate.Username == "" || userCreate.Password == "" {
         return nil, "Invalid user data", errors.New("invalid user data")
     }
 
-    // Check if the user already exists
     existingUser, err := uc.userRepository.GetUserByID(uc.context, userCreate.Id)
     if err != nil {
         return nil, "Failed to check existing user", err
     }
 if existingUser != nil {
-	return nil, "Username already exists", errors.New("Username already exists")
+	return nil, "Username already exists", errors.New("username already exists")
 }
 
-// Create a new user entity
+
 newUser := &entities.User{
 	ID:       userCreate.Id,
 	UserName: userCreate.Username,
 	Password: userCreate.Password,
 }
 
-// Create the user in the repository
 userInfo, err := uc.userRepository.CreateUser(uc.context, *newUser)
     if err != nil {
         return nil, "Failed to create user", err
@@ -76,9 +73,3 @@ func (uc *AuthorizationUsecase) AdminRegister(currUser *entities.AuthenticatedUs
 	}
 	return uc.Register(currUser, userCreate, param)
 }
-
-// Register( currUser *entities.AuthenticatedUser, userCreate *model.UserCreate, param any) (*model.UserInfo, string, error)
-// 	Login( currUser *entities.AuthenticatedUser, userLogin *model.UserLogin, parma any) (*entities.Token, string, error)
-// 	AdminRegister( currUser *entities.AuthenticatedUser, userCreate *model.UserCreate, param any) (*model.UserInfo, string, error)
-// }
-

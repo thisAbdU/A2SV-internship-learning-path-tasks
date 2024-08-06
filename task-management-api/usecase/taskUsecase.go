@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/config"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/entities"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/model"
+	"task-management-api/config"
+	"task-management-api/domain/entities"
+	"task-management-api/domain/model"
 
 	"time"
 )

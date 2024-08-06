@@ -14,10 +14,8 @@ type Claims struct {
 }
 
 func GenerateToken(s string) (string, error) {
-    // Set expiration time for the token (24 hours in this example)
     expirationTime := time.Now().Add(24 * time.Hour)
 
-    // Create custom claims
     claims := &Claims{
         UserID: s,
         StandardClaims: jwt.StandardClaims{
@@ -26,10 +24,8 @@ func GenerateToken(s string) (string, error) {
         },
     }
 
-    // Create a token with the claims
     token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-    // Sign the token with a secret key
+    
     tokenString, err := token.SignedString(jwtKey)
     if err != nil {
         return "", err

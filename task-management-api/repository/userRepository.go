@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/entities"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/model"
+	"task-management-api/domain/entities"
+	"task-management-api/domain/model"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

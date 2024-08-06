@@ -1,6 +1,6 @@
 package entities
 
-import "example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/model"
+import "task-management-api/domain/model"
 
 type AuthenticatedUser struct {
 	UserID   string `json:"user_id"`

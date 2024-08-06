@@ -2,7 +2,7 @@ package entities
 
 import (
 	"context"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/model"
+	"task-management-api/domain/model"
 )
 
 type User struct {

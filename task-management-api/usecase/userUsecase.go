@@ -2,9 +2,8 @@ package usecase
 
 import (
 	"context"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/config"
-	"example/GO-PRACTICE-EXERCISE/GO-API-exercise/domain/entities"
-
+	"task-management-api/config"
+	"task-management-api/domain/entities"
 )
 
 type UserUsecase struct {
