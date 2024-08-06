@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"task-management-api/config"
 	"task-management-api/domain/model"
@@ -32,6 +33,7 @@ func (au *authcontroller) Register(c *gin.Context){
 
 	usernfo , err := au.AuthorizationUsecase.Register(newUser)	
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}
@@ -49,6 +51,7 @@ func (uc *authcontroller) Login(c *gin.Context){
 
 	token, err := uc.AuthorizationUsecase.Login(userLogin)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
 		return
 	}

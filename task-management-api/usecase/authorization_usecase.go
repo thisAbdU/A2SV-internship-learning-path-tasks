@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"log"
 	"task-management-api/config"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
@@ -23,17 +24,20 @@ func NewAuthorizationUsecase(environment *config.Environment, userRepository *en
 }
 
 func (uc *AuthorizationUsecase) Login(userLogin *model.UserLogin) (string, error) {
-    user, err := uc.userRepository.GetUserByID(uc.context, userLogin.Id)
+    user, err := uc.userRepository.GetUserByUsername(uc.context, userLogin.Username)
+
     if err != nil {
         return "", errors.New("user Not Found")
     }
     if user.Password != userLogin.Password {
         return "", errors.New("invalid Password")
     }
+
     token, err := middleware.GenerateToken(user.ID)
     if err != nil {
         return "", errors.New("token Generation Failed")
     }
+    
     return token, nil
 }
 
@@ -44,9 +48,11 @@ func (uc *AuthorizationUsecase) Register(userCreate *model.UserCreate) (*model.U
     }
 
     existingUser, err := uc.userRepository.GetUserByID(uc.context, userCreate.Id)
-    if err != nil {
-        return nil, errors.New("user Not Found")
-    }
+    
+    if err.Error() != "mongo: no documents in result" {
+        log.Println(err)
+        return nil, errors.New("registration failed")
+    }    
 
     if existingUser != nil {
         return nil, errors.New("username already exists")

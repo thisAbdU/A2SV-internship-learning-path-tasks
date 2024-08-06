@@ -54,7 +54,7 @@ func (ur *userRepository) GetUser(ctx context.Context, param string) ([]*entitie
 
 func (ur *userRepository) GetUserByID(ctx context.Context, id string) (*entities.User, error) {
 	filter := bson.M{
-		"_id": id,
+		"id": id,
 	}
 
 	result := ur.database.Collection(ur.collection).FindOne(ctx, filter)
@@ -98,6 +98,24 @@ func (ur *userRepository) DeleteUser(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (ur *userRepository) GetUserByUsername(ctx context.Context, username string) (*entities.User, error) {
+	filter := bson.M{
+		"username": username,
+	}
+
+	result := ur.database.Collection(ur.collection).FindOne(ctx, filter)
+	if err := result.Err(); err != nil {
+		return nil, err
+	}
+	
+	var user entities.User
+	if err := result.Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (ur *userRepository) CreateUser(ctx context.Context, newUser model.UserCreate) (*model.UserInfo, error) {

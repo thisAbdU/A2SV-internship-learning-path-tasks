@@ -1,17 +1,18 @@
 package middleware
 
 import (
-   
-    "time"
-    "github.com/dgrijalva/jwt-go"
-)
+	"task-management-api/config"
+	"time"
 
-var jwtKey = []byte("your-secret-key")
+	"github.com/dgrijalva/jwt-go"
+)
 
 type Claims struct {
     UserID string `json:"userID"`
     jwt.StandardClaims
 }
+
+var jwtKey = config.GetJwtKey();
 
 func GenerateToken(s string) (string, error) {
     expirationTime := time.Now().Add(24 * time.Hour)

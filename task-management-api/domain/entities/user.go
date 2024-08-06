@@ -17,6 +17,7 @@ type UserRepository interface {
 	UpdateUser(ctx context.Context, id string, updatedUser User) error
 	DeleteUser(ctx context.Context, id string) error
 	CreateUser(ctx context.Context, newUser model.UserCreate) (*model.UserInfo, error)
+	GetUserByUsername(ctx context.Context, username string) (*User, error)
 }
 
 type UserUsecase interface {

@@ -20,12 +20,22 @@ func NewEnvironment()(*Environment, error) {
 		log.Println(err)
 		log.Fatal("Error loading .env file")
 	}
-	
+
 	return &Environment{
 		DbURL: os.Getenv("DbURL"),
 		DbName: os.Getenv("DbName"),
 		Port: os.Getenv("Port"),
 		JwtKey: os.Getenv("jwtKey"),
 	}, err
+}
+
+func GetJwtKey() []byte {
+	env, err := NewEnvironment()
+	if err != nil {
+		log.Println(err)
+		log.Fatal(err)
+	}
+
+	return []byte(env.JwtKey)
 }
 
