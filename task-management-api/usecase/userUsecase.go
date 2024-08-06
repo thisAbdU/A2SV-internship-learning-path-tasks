@@ -4,6 +4,7 @@ import (
 	"context"
 	"task-management-api/config"
 	"task-management-api/domain/entities"
+	"task-management-api/domain/model"
 )
 
 type UserUsecase struct {
@@ -52,7 +53,7 @@ func (uc *UserUsecase) DeleteUser(id string) error {
 	return nil
 }
 
-func (uc *UserUsecase) CreateUser(newUser entities.User) error {
+func (uc *UserUsecase) CreateUser(newUser model.UserCreate) error {
 	_, err := uc.userRepository.CreateUser(context.Background(), newUser)
 	if err != nil {
 		return err

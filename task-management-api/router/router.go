@@ -13,11 +13,14 @@ import (
 
 func NewAuthRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
 	userRepository := repository.NewUserRepository(db, "user")
-	userUseCase := usecase.NewUserUsecase(environment, userRepository)
-	userController := controller.NewUserController(*environment, *userUseCase)
+	// userUseCase := usecase.NewUserUsecase(environment, userRepository)
+	// // userController := controller.NewUserController(*environment, *userUseCase)
 
-	r.POST("/register", userController.Register)
-	r.POST("/login", userController.Login)
+	authUsecase :=  usecase.NewAuthorizationUsecase(environment, &userRepository)
+	authController := controller.NewAuthController(*environment, *authUsecase)
+
+	r.POST("/register", authController.Register)
+	r.POST("/login", authController.Login)
 }
 
 func taskRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {

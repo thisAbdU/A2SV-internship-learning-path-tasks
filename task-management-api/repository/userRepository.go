@@ -100,7 +100,7 @@ func (ur *userRepository) DeleteUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (ur *userRepository) CreateUser(ctx context.Context, newUser entities.User) (*model.UserInfo, error) {
+func (ur *userRepository) CreateUser(ctx context.Context, newUser model.UserCreate) (*model.UserInfo, error) {
 	_, err := ur.database.Collection(ur.collection).InsertOne(ctx, newUser)
 	if err != nil {
 		return nil, err

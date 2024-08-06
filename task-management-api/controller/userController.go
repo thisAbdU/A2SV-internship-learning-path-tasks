@@ -4,6 +4,7 @@ import (
 	"context"
 	"task-management-api/config"
 	"task-management-api/domain/entities"
+	"task-management-api/domain/model"
 	"task-management-api/usecase"
 
 	"net/http"
@@ -75,7 +76,7 @@ func (uc *usercontroller) DeleteUser(c *gin.Context) {
 
 func (uc *usercontroller) CreateUser(c *gin.Context) {
 	
-	var newUser entities.User
+	var newUser model.UserCreate
 	if err := c.BindJSON(&newUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
 		return
@@ -87,13 +88,5 @@ func (uc *usercontroller) CreateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
-}
-
-func (uc *usercontroller) Register(c *gin.Context){
-
-}
-
-func (uc *usercontroller) Login(c *gin.Context){
-	
+	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully", "user": newUser})
 }
