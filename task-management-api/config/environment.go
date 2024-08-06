@@ -17,9 +17,10 @@ type Environment struct {
 func NewEnvironment()(*Environment, error) {
 	err := godotenv.Load()
 	if err != nil {
+		log.Println(err)
 		log.Fatal("Error loading .env file")
-	} 
-
+	}
+	
 	return &Environment{
 		DbURL: os.Getenv("DbURL"),
 		DbName: os.Getenv("DbName"),

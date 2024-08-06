@@ -12,6 +12,7 @@ import (
 func main()  {
 	env, err := config.NewEnvironment()
 	if err != nil {
+		log.Println(err)
 		log.Fatal(err)
 	}
 
@@ -23,5 +24,6 @@ func main()  {
 	route := gin.Default()
 	
 	router.NewRouter(env, time.Second * 5, db, route)
+	route.Run(":" + env.Port)
 
 }
