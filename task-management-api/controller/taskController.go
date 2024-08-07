@@ -22,13 +22,13 @@ func NewTaskController(newEnvironment config.Environment,taskUsecase usecase.Tas
 }
 
 func (tc *taskcontroller) GetTasks(c *gin.Context) {
-   
-    param := c.Query("param")
-    if param == "" {
-        param = c.PostForm("param")
-    }
+    userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
 
-    tasks, err := tc.TaskUsecase.GetTasks(param)
+    tasks, err := tc.TaskUsecase.GetTasks(userID.(string))
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"message": "error retrieving tasks"})
         return
@@ -39,10 +39,15 @@ func (tc *taskcontroller) GetTasks(c *gin.Context) {
 
 
 func (tc *taskcontroller) GetTaskByID(c *gin.Context){
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
 
 	id := c.Param("id")
 
-	task, err := tc.TaskUsecase.GetTaskByID(id)	
+	task, err := tc.TaskUsecase.GetTaskByID(id, userID.(string))	
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "error retrieving task"})
 		return
@@ -52,15 +57,21 @@ func (tc *taskcontroller) GetTaskByID(c *gin.Context){
 }
 
 func (tc *taskcontroller) UpdateTask(c *gin.Context){
-	
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
 	id := c.Param("id")
+
 	var updatedTask entities.Task
 	if err := c.BindJSON(&updatedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
 		return
 	}
 
-	err := tc.TaskUsecase.UpdateTask(id, updatedTask)
+	err := tc.TaskUsecase.UpdateTask(id, updatedTask, userID.(string))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Not Found"})
 		return
@@ -70,9 +81,15 @@ func (tc *taskcontroller) UpdateTask(c *gin.Context){
 }
 
 func (tc *taskcontroller) DeleteTask(c *gin.Context){
-	
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
 	id := c.Param("id")
-	err := tc.TaskUsecase.DeleteTask(id)
+
+	err := tc.TaskUsecase.DeleteTask(id, userID.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
@@ -81,13 +98,20 @@ func (tc *taskcontroller) DeleteTask(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
 }
 
-func (tc *taskcontroller) CreateTask(c *gin.Context){
-	
+func (tc *taskcontroller) CreateTask(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "User ID not found"})
+		return
+	}
+
 	var newTask entities.Task
 	if err := c.BindJSON(&newTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
 		return
 	}
+
+	newTask.UserID = userID.(string)
 
 	err := tc.TaskUsecase.CreateTask(newTask)
 	if err != nil {
@@ -97,6 +121,7 @@ func (tc *taskcontroller) CreateTask(c *gin.Context){
 
 	c.JSON(http.StatusCreated, gin.H{"message": "Task created successfully"})
 }
+
 
 func (tc *taskcontroller) GetEnvironment(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"environment": tc.newEnvironment})

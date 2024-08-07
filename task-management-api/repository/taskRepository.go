@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -24,15 +23,13 @@ func NewTaskRepository(database *mongo.Database, collection string) entities.Tas
 		collection: collection,
 	}
 }
-func (tr *taskRepository) GetTasks(ctx context.Context, param string) ([]*model.TaskInfo, error) {
+
+func (tr *taskRepository) GetTasks(ctx context.Context, userID string) ([]*model.TaskInfo, error) {
     var tasks []*model.TaskInfo
 
-    filter := bson.M{
-        "$or": []bson.M{
-            {"title": primitive.Regex{Pattern: param, Options: "i"}},
-            {"description": primitive.Regex{Pattern: param, Options: "i"}},
-        },
-    }
+	filter := bson.M{
+		"user_id": userID,
+	}	
 
     cursor, err := tr.database.Collection(tr.collection).Find(ctx, filter)
     if err != nil {
@@ -59,8 +56,13 @@ func (tr *taskRepository) GetTasks(ctx context.Context, param string) ([]*model.
 }
 
 
-func (tr *taskRepository) GetTaskByID(ctx context.Context, id string) (*entities.Task, error) {
-    filter := bson.M{"_id": id}
+func (tr *taskRepository) GetTaskByID(ctx context.Context, id string, userID string) (*entities.Task, error) {
+	filter := bson.M{
+		"$and": []bson.M{
+			{"_id": id},
+			{"user_id": userID},
+		},
+	}
 
     var task entities.Task
 
@@ -75,9 +77,12 @@ func (tr *taskRepository) GetTaskByID(ctx context.Context, id string) (*entities
     return &task, nil
 }
 
-func (tr *taskRepository) UpdateTask (ctx context.Context, id string, updatedTask entities.Task) error{
+func (tr *taskRepository) UpdateTask (ctx context.Context, id string, updatedTask entities.Task, userID string) error{
 	filter := bson.M{
-		"_id": id,
+		"$and": []bson.M{
+			{"_id": id},
+			{"user_id": userID},
+		},
 	}
 
 	update := bson.M{
@@ -94,9 +99,12 @@ func (tr *taskRepository) UpdateTask (ctx context.Context, id string, updatedTas
 	
 }
 
-func (tr *taskRepository) DeleteTask(ctx context.Context, id string) error{
+func (tr *taskRepository) DeleteTask(ctx context.Context, id string, userID string) error{
 	filter := bson.M{
-		"_id": id,
+		"$and": []bson.M{
+			{"_id": id},
+			{"user_id": userID},
+		},
 	}
 
 	_, err := tr.database.Collection(tr.collection).DeleteOne(ctx, filter)

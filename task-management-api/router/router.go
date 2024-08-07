@@ -3,6 +3,7 @@ package router
 import (
 	"task-management-api/config"
 	"task-management-api/controller"
+	"task-management-api/middleware"
 	"task-management-api/repository"
 	"task-management-api/usecase"
 	"time"
@@ -13,9 +14,6 @@ import (
 
 func NewAuthRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
 	userRepository := repository.NewUserRepository(db, "user")
-	// userUseCase := usecase.NewUserUsecase(environment, userRepository)
-	// // userController := controller.NewUserController(*environment, *userUseCase)
-
 	authUsecase :=  usecase.NewAuthorizationUsecase(environment, &userRepository)
 	authController := controller.NewAuthController(*environment, *authUsecase)
 
@@ -24,15 +22,17 @@ func NewAuthRouter(environment *config.Environment, timeout time.Duration, db *m
 }
 
 func taskRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
-
 	taskRepository := repository.NewTaskRepository(db, "task")
-	taskUseCase := usecase.NewTaskUsecase(environment,&taskRepository)
+	taskUseCase := usecase.NewTaskUsecase(environment, &taskRepository)
 	taskController := controller.NewTaskController(*environment, *taskUseCase)
 
-	r.GET("/", taskController.GetTasks)
-	r.GET("/:id", taskController.GetTaskByID)
-	r.PUT("/:id", taskController.UpdateTask)
-	r.DELETE("/:id", taskController.DeleteTask)
+	taskGroup := r.Group("/tasks")
+	taskGroup.Use(middleware.AuthMiddleware())
+
+	taskGroup.GET("/", taskController.GetTasks)
+	taskGroup.GET("/:id", taskController.GetTaskByID)
+	taskGroup.PATCH("/:id", taskController.UpdateTask)
+	taskGroup.DELETE("/:id", taskController.DeleteTask)
 }
 
 

@@ -8,6 +8,8 @@ import (
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
 	"task-management-api/middleware"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AuthorizationUsecase struct {
@@ -33,7 +35,7 @@ func (uc *AuthorizationUsecase) Login(userLogin *model.UserLogin) (string, error
         return "", errors.New("invalid Password")
     }
 
-    token, err := middleware.GenerateToken(user.ID)
+    token, err := middleware.GenerateToken(user.ID.Hex())
     if err != nil {
         return "", errors.New("token Generation Failed")
     }
@@ -47,7 +49,7 @@ func (uc *AuthorizationUsecase) Register(userCreate *model.UserCreate) (*model.U
         return nil, errors.New("invalid user data")
     }
 
-    existingUser, err := uc.userRepository.GetUserByID(uc.context, userCreate.Id)
+    existingUser, err := uc.userRepository.GetUserByID(uc.context, userCreate.ID.Hex())
     
     if err.Error() != "mongo: no documents in result" {
         log.Println(err)
@@ -60,7 +62,7 @@ func (uc *AuthorizationUsecase) Register(userCreate *model.UserCreate) (*model.U
 
 
     newUser := &model.UserCreate{
-        Id:       userCreate.Id,
+        ID:       primitive.NewObjectID(),
         Username: userCreate.Username,
         Password: userCreate.Password,
         Email:   userCreate.Email,

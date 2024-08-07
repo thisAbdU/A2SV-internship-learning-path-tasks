@@ -3,10 +3,12 @@ package entities
 import (
 	"context"
 	"task-management-api/domain/model"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
-	ID       string `json:"id" bson:"_id"`
+	ID              primitive.ObjectID `bson:"_id,omitempty"`
 	UserName string `json:"username"`
 	Password string `json:"password"`
 }

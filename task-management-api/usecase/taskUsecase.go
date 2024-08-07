@@ -43,11 +43,11 @@ func (uc *TaskUsecase) GetTasks(param string) ([]*model.TaskInfo, error) {
 }
 
 
-func (uc *TaskUsecase) GetTaskByID(id string) (*model.TaskInfo, error) {
+func (uc *TaskUsecase) GetTaskByID(id string, userID string) (*model.TaskInfo, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	taskEntity, err := uc.TaskRepository.GetTaskByID(ctx, id)
+	taskEntity, err := uc.TaskRepository.GetTaskByID(ctx, id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,22 +60,22 @@ func (uc *TaskUsecase) GetTaskByID(id string) (*model.TaskInfo, error) {
 	return taskInfo, nil
 }
 
-func (uc *TaskUsecase) UpdateTask(id string, updatedTask entities.Task) error {
+func (uc *TaskUsecase) UpdateTask(id string, updatedTask entities.Task, userID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := uc.TaskRepository.UpdateTask(ctx, id, updatedTask)
+	err := uc.TaskRepository.UpdateTask(ctx, id, updatedTask, userID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (uc *TaskUsecase) DeleteTask(id string) error {
+func (uc *TaskUsecase) DeleteTask(id string, userID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := uc.TaskRepository.DeleteTask(ctx, id)
+	err := uc.TaskRepository.DeleteTask(ctx, id, userID)
 	if err != nil {
 		return err
 	}

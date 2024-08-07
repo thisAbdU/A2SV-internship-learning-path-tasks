@@ -3,10 +3,13 @@ package entities
 import (
 	"context"
 	"task-management-api/domain/model"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Task struct {
-    ID          string `json:"id" bson:"_id"`
+    ID          primitive.ObjectID `bson:"_id,omitempty"`
+	UserID 		string `json:"user_id"`
     UserName    string `json:"username"`
     Password    string `json:"password"`
     Title       string `json:"title"`
@@ -16,16 +19,16 @@ type Task struct {
 
 type TaskRepository interface {
 	GetTasks(ctx context.Context, param string) ([]*model.TaskInfo, error)
-	GetTaskByID(ctx context.Context, id string) (*Task, error)
-	UpdateTask(ctx context.Context, id string, updatedTask Task) error
-	DeleteTask(ctx context.Context, id string) error
+	GetTaskByID(ctx context.Context, id string, userID string) (*Task, error)
+	UpdateTask(ctx context.Context, id string, updatedTask Task, userID string) error
+	DeleteTask(ctx context.Context, id string, userID string) error
 	CreateTask(ctx context.Context, newTask Task) error
 }
 
 type TaskUsecase interface {
 	GetTasks() (*[]*model.TaskInfo, error)
-	GetTaskByID(ctx context.Context, id string) (*model.TaskInfo, error)
-	UpdateTask(id string) (*model.TaskUpdate, error)
-	DeleteTask(id string) error
+	GetTaskByID(ctx context.Context, id string, userID string) (*model.TaskInfo, error)
+	UpdateTask(id string, userID string) (*model.TaskUpdate, error)
+	DeleteTask(id string, userID string) error
 	CreateTask(newTask Task) error
 }
