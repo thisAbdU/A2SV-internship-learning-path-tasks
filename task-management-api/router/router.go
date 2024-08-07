@@ -26,13 +26,11 @@ func taskRouter(environment *config.Environment, timeout time.Duration, db *mong
 	taskUseCase := usecase.NewTaskUsecase(environment, &taskRepository)
 	taskController := controller.NewTaskController(*environment, *taskUseCase)
 
-	taskGroup := r.Group("/tasks")
-	taskGroup.Use(middleware.AuthMiddleware())
-
-	taskGroup.GET("/", taskController.GetTasks)
-	taskGroup.GET("/:id", taskController.GetTaskByID)
-	taskGroup.PATCH("/:id", taskController.UpdateTask)
-	taskGroup.DELETE("/:id", taskController.DeleteTask)
+	r.GET("/", taskController.GetTasks)
+	r.POST("/", taskController.CreateTask)
+	r.GET("/:id", taskController.GetTaskByID)
+	r.PATCH("/:id", taskController.UpdateTask)
+	r.DELETE("/:id", taskController.DeleteTask)
 }
 
 
@@ -44,8 +42,8 @@ func userRouter(environment *config.Environment, timeout time.Duration, db *mong
 
 	r.GET("/", userController.GetUsers)
 	r.GET("/:id", userController.GetUserByID)
-	r.PUT("/:id", userController.UpdateUser)
-	r.DELETE("/:id", userController.DeleteUser)
+	r.PATCH("/:id", userController.UpdateUser).Use(middleware.AuthMiddleware())
+	r.DELETE("/:id", userController.DeleteUser).Use(middleware.AuthMiddleware())
 }
 
 func NewRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.Engine) {
@@ -53,6 +51,10 @@ func NewRouter(environment *config.Environment, timeout time.Duration, db *mongo
 	NewAuthRouter(environment, timeout, db, authRouter)
 
 	taskGroup := r.Group("/task")
+	taskGroup.Use(middleware.AuthMiddleware())
 	taskRouter(environment, timeout, db, taskGroup)
+
+	userGroup := r.Group("/")
+	userRouter(environment, timeout, db, userGroup)
 }
 

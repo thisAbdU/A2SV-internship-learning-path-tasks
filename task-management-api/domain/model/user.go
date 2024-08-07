@@ -8,7 +8,7 @@ type UserCreate struct {
 	Email    string `json:"email"`
 	Name     string `json:"name"`
 	Bio      string `json:"bio"`
-	ID              primitive.ObjectID `bson:"_id,omitempty"`
+	ID       primitive.ObjectID `bson:"_id,omitempty"`
 }
 
 type UserLogin struct {

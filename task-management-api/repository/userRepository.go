@@ -28,7 +28,7 @@ func (ur *userRepository) GetUser(ctx context.Context, param string) ([]*entitie
 	filter := bson.M{
 		"$or": []bson.M{
 			{"username": primitive.Regex{Pattern: param, Options: "i"}},
-			{"password": primitive.Regex{Pattern: param, Options: "i"}},
+			{"email": primitive.Regex{Pattern: param, Options: "i"}},
 		},
 	}
 
@@ -53,8 +53,13 @@ func (ur *userRepository) GetUser(ctx context.Context, param string) ([]*entitie
 }
 
 func (ur *userRepository) GetUserByID(ctx context.Context, id string) (*entities.User, error) {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
 	filter := bson.M{
-		"id": id,
+		"_id": objectID,
 	}
 
 	result := ur.database.Collection(ur.collection).FindOne(ctx, filter)
@@ -71,15 +76,20 @@ func (ur *userRepository) GetUserByID(ctx context.Context, id string) (*entities
 }
 
 func (ur *userRepository) UpdateUser(ctx context.Context, id string, updatedUser entities.User) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
 	filter := bson.M{
-		"_id": id,
+		"_id": objectID,
 	}
 
 	update := bson.M{
 		"$set": updatedUser,
 	}
 
-	_, err := ur.database.Collection(ur.collection).UpdateOne(ctx, filter, update)
+	_, err = ur.database.Collection(ur.collection).UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
@@ -88,11 +98,15 @@ func (ur *userRepository) UpdateUser(ctx context.Context, id string, updatedUser
 }
 
 func (ur *userRepository) DeleteUser(ctx context.Context, id string) error {
-	filter := bson.M{
-		"_id": id,
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
 	}
 
-	_, err := ur.database.Collection(ur.collection).DeleteOne(ctx, filter)
+	filter := bson.M{
+		"_id": objectID,
+	}
+	_, err = ur.database.Collection(ur.collection).DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"log"
 	"task-management-api/config"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
@@ -41,6 +42,7 @@ func (uc *usercontroller) GetUserByID(c *gin.Context) {
 
 	user, err := uc.UserUsecase.GetUserByID(context.TODO(), id)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "error retrieving user"})
 		return
 	}

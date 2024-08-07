@@ -21,11 +21,11 @@ func NewTaskUsecase(environment *config.Environment, taskRepository *entities.Ta
 	}
 }
 
-func (uc *TaskUsecase) GetTasks(param string) ([]*model.TaskInfo, error) {
+func (uc *TaskUsecase) GetTasks(userID string) ([]*model.TaskInfo, error) {
     ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
     defer cancel()
 
-    tasks, err := uc.TaskRepository.GetTasks(ctx, param)
+    tasks, err := uc.TaskRepository.GetTasks(ctx, userID)
     if err != nil {
         return nil, err
     }

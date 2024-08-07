@@ -18,7 +18,7 @@ type Task struct {
 }
 
 type TaskRepository interface {
-	GetTasks(ctx context.Context, param string) ([]*model.TaskInfo, error)
+	GetTasks(ctx context.Context, userID string) ([]*model.TaskInfo, error)
 	GetTaskByID(ctx context.Context, id string, userID string) (*Task, error)
 	UpdateTask(ctx context.Context, id string, updatedTask Task, userID string) error
 	DeleteTask(ctx context.Context, id string, userID string) error

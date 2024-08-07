@@ -47,8 +47,15 @@ func (tc *taskcontroller) GetTaskByID(c *gin.Context){
 
 	id := c.Param("id")
 
-	task, err := tc.TaskUsecase.GetTaskByID(id, userID.(string))	
+	task, err := tc.TaskUsecase.GetTaskByID(id, userID.(string))
+
 	if err != nil {
+
+		if err.Error() == "mongo: no documents in result" {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+			return
+		}
+
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "error retrieving task"})
 		return
 	}
@@ -66,6 +73,7 @@ func (tc *taskcontroller) UpdateTask(c *gin.Context){
 	id := c.Param("id")
 
 	var updatedTask entities.Task
+
 	if err := c.BindJSON(&updatedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
 		return
@@ -73,6 +81,12 @@ func (tc *taskcontroller) UpdateTask(c *gin.Context){
 
 	err := tc.TaskUsecase.UpdateTask(id, updatedTask, userID.(string))
 	if err != nil {
+
+		if err.Error() == "no documents updated" {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Task is the same"})
+			return
+		}
+
 		c.JSON(http.StatusNotFound, gin.H{"message": "Not Found"})
 		return
 	}
@@ -91,6 +105,11 @@ func (tc *taskcontroller) DeleteTask(c *gin.Context){
 
 	err := tc.TaskUsecase.DeleteTask(id, userID.(string))
 	if err != nil {
+		if err.Error() == "no documents deleted"{
+			c.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+			return
+		}
+
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}
@@ -106,6 +125,7 @@ func (tc *taskcontroller) CreateTask(c *gin.Context) {
 	}
 
 	var newTask entities.Task
+
 	if err := c.BindJSON(&newTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
 		return

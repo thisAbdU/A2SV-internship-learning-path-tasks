@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
 
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -28,7 +30,7 @@ func (tr *taskRepository) GetTasks(ctx context.Context, userID string) ([]*model
     var tasks []*model.TaskInfo
 
 	filter := bson.M{
-		"user_id": userID,
+		"userid": userID,
 	}	
 
     cursor, err := tr.database.Collection(tr.collection).Find(ctx, filter)
@@ -57,10 +59,12 @@ func (tr *taskRepository) GetTasks(ctx context.Context, userID string) ([]*model
 
 
 func (tr *taskRepository) GetTaskByID(ctx context.Context, id string, userID string) (*entities.Task, error) {
+	objectID, _ := primitive.ObjectIDFromHex(id)
+
 	filter := bson.M{
 		"$and": []bson.M{
-			{"_id": id},
-			{"user_id": userID},
+			{"_id": objectID},
+			{"userid": userID},
 		},
 	}
 
@@ -68,6 +72,7 @@ func (tr *taskRepository) GetTaskByID(ctx context.Context, id string, userID str
 
     err := tr.database.Collection(tr.collection).FindOne(ctx, filter).Decode(&task)
     if err != nil {
+		log.Println(err)
         if err == mongo.ErrNoDocuments {
             return nil, err
         }
@@ -76,41 +81,61 @@ func (tr *taskRepository) GetTaskByID(ctx context.Context, id string, userID str
 
     return &task, nil
 }
+func (tr *taskRepository) UpdateTask(ctx context.Context, id string, updatedTask entities.Task, userID string) error {
+    objectID, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        log.Fatal(err)
+        return err
+    }
 
-func (tr *taskRepository) UpdateTask (ctx context.Context, id string, updatedTask entities.Task, userID string) error{
-	filter := bson.M{
-		"$and": []bson.M{
-			{"_id": id},
-			{"user_id": userID},
+    filter := bson.M{
+        "_id":    objectID,
+        "userid": userID,
+    }
+
+	update := bson.M{
+		"$set": bson.M{
+			"title": updatedTask.Title,
+			"description": updatedTask.Description,
+			"status": updatedTask.Status,
 		},
 	}
 
-	update := bson.M{
-		"$set": updatedTask,
-	}
+    result, err := tr.database.Collection(tr.collection).UpdateOne(ctx, filter, update)
+    if err != nil {
+        log.Fatal(err)
+        return err
+    }
 
-	_, err := tr.database.Collection(tr.collection).UpdateOne(ctx, filter, update)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
+    if result.ModifiedCount == 0 {
+        return fmt.Errorf("no documents updated")
+    }
 
-	return nil
-	
+    return nil
 }
 
 func (tr *taskRepository) DeleteTask(ctx context.Context, id string, userID string) error{
+	objectID, err := primitive.ObjectIDFromHex(id)
+    if err != nil {
+        log.Fatal(err)
+        return err
+    }
+
 	filter := bson.M{
 		"$and": []bson.M{
-			{"_id": id},
-			{"user_id": userID},
+			{"_id": objectID},
+			{"userid": userID},
 		},
 	}
-
-	_, err := tr.database.Collection(tr.collection).DeleteOne(ctx, filter)
+	
+	result, err := tr.database.Collection(tr.collection).DeleteMany(ctx, filter)
 	if err != nil {
 		log.Fatal(err)
 		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("no documents deleted")
 	}
 
 	return nil
