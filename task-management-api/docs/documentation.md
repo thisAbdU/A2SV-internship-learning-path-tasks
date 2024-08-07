@@ -3,7 +3,7 @@
 ### Authentication Routes
 
 #### Register
-- **Endpoint**: `POST /register`
+- **Endpoint**: `POST /auth/register`
 - **Description**: Registers a new user.
 - **Request Body**:
   ```json
@@ -28,7 +28,7 @@
     ```
 
 #### Login
-- **Endpoint**: `POST /login`
+- **Endpoint**: `POST /auth/login`
 - **Description**: Authenticates a user and returns a JWT token.
 - **Request Body**:
   ```json
