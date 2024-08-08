@@ -99,14 +99,15 @@ func (tr *taskRepository) UpdateTask(ctx context.Context, id string, updatedTask
 	}
 
     result, err := tr.database.Collection(tr.collection).UpdateOne(ctx, filter, update)
-    if err != nil {
-        log.Fatal(err)
-        return err
-    }
+	
+	if err != nil {
+		return fmt.Errorf("update failed: %w", err)
+	}
 
-    if result.ModifiedCount == 0 {
-        return fmt.Errorf("no documents updated")
-    }
+	if result.ModifiedCount == 0 {
+		return fmt.Errorf("no documents updated")
+	}
+	
 
     return nil
 }
