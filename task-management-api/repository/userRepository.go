@@ -2,13 +2,14 @@ package repository
 
 import (
 	"context"
+	"log"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"task-management-api/mongo"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type userRepository struct {
@@ -63,7 +64,7 @@ func (ur *userRepository) GetUserByID(ctx context.Context, id string) (*entities
 	}
 
 	result := ur.database.Collection(ur.collection).FindOne(ctx, filter)
-	
+
 	var user entities.User
 	if err := result.Decode(&user); err != nil {
 		return nil, err
@@ -127,11 +128,12 @@ func (ur *userRepository) GetUserByUsername(ctx context.Context, username string
 }
 
 func (ur *userRepository) CreateUser(ctx context.Context, newUser model.UserCreate) (*model.UserInfo, error) {
-	_, err := ur.database.Collection(ur.collection).InsertOne(ctx, newUser)
+	_, err := ur.database.Collection(ur.collection).InsertOne(ctx, &newUser)
 	if err != nil {
 		return nil, err
 	}
-
-	return nil, err
+	log.Println("Inside repository")
+	log.Println(err)
+	return nil, nil
 }
 

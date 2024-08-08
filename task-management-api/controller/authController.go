@@ -31,14 +31,13 @@ func (au *authcontroller) Register(c *gin.Context){
 		return
 	}
 
-	usernfo , err := au.AuthorizationUsecase.Register(newUser)	
+	_ , err := au.AuthorizationUsecase.Register(newUser)	
 	if err != nil {
-		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully", "user": usernfo})
+	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
 }
 
 func (uc *authcontroller) Login(c *gin.Context){

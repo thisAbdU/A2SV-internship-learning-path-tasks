@@ -16,6 +16,7 @@ type Environment struct {
 
 func NewEnvironment()(*Environment, error) {
 	err := godotenv.Load()
+	log.Println("I am here")
 	if err != nil {
 		log.Println(err)
 		log.Fatal("Error loading .env file")

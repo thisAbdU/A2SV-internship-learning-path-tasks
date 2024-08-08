@@ -18,9 +18,9 @@ type AuthorizationUsecase struct {
 	Environment   *config.Environment
 }
 
-func NewAuthorizationUsecase(environment *config.Environment, userRepository *entities.UserRepository) *AuthorizationUsecase {
+func NewAuthorizationUsecase(environment *config.Environment, userRepository entities.UserRepository) *AuthorizationUsecase {
 	return &AuthorizationUsecase{
-		userRepository: *userRepository,
+		userRepository: userRepository,
 		Environment:    environment,
 	}
 }

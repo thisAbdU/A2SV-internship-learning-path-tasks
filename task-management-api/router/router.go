@@ -15,7 +15,7 @@ import (
 
 func NewAuthRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.RouterGroup) {
 	userRepository := repository.NewUserRepository(db, "user")
-	authUsecase :=  usecase.NewAuthorizationUsecase(environment, &userRepository)
+	authUsecase :=  usecase.NewAuthorizationUsecase(environment, userRepository)
 	authController := controller.NewAuthController(*environment, *authUsecase)
 
 	r.POST("/register", authController.Register)
@@ -58,4 +58,3 @@ func NewRouter(environment *config.Environment, timeout time.Duration, db mongo.
 	userGroup := r.Group("/")
 	userRouter(environment, timeout, db, userGroup)
 }
-

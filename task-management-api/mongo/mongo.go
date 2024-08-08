@@ -170,31 +170,38 @@ func (mc *mongoCollection) UpdateOne(ctx context.Context, filter interface{}, up
 }
 
 func (mc *mongoCollection) InsertOne(ctx context.Context, document interface{}) (interface{}, error) {
-	doc := reflect.ValueOf(document).Elem()
+	doc := reflect.ValueOf(document)
 
-	// check if the provided interface is a struct
+	if doc.Kind() != reflect.Ptr {
+		return nil, errors.New("document must be a pointer to a struct")
+	}
+
+	doc = doc.Elem()
+
 	if doc.Kind() != reflect.Struct {
-		return 0, errors.New("not a struct")
+		return nil, errors.New("document must be a struct")
 	}
 
 	now := time.Now()
 
-	// Find the 'CreatedAt' field and set its value
 	createdAtField := doc.FieldByName("CreatedAt")
 	if createdAtField.IsValid() && createdAtField.Type() == reflect.TypeOf(time.Time{}) {
 		createdAtField.Set(reflect.ValueOf(now))
 	}
 
-	// Find the 'UpdatedAt' field and set its value
 	updatedAtField := doc.FieldByName("UpdatedAt")
 	if updatedAtField.IsValid() && updatedAtField.Type() == reflect.TypeOf(time.Time{}) {
 		updatedAtField.Set(reflect.ValueOf(now))
 	}
 
-	id, err := mc.coll.InsertOne(ctx, document)
-	//TODO: add error handling for id.InsertedID
-	return id.InsertedID, err
+	result, err := mc.coll.InsertOne(ctx, document)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.InsertedID, nil
 }
+
 
 func (mc *mongoCollection) InsertMany(ctx context.Context, document []interface{}) ([]interface{}, error) {
 	res, err := mc.coll.InsertMany(ctx, document)
