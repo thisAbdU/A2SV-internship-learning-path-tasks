@@ -7,15 +7,16 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"task-management-api/mongo"
+
 )
 
 type userRepository struct {
-	database   *mongo.Database
+	database   mongo.Database
 	collection string
 }
 
-func NewUserRepository(database *mongo.Database, collection string) entities.UserRepository {
+func NewUserRepository(database mongo.Database, collection string) entities.UserRepository {
 	return &userRepository{
 		database:   database,
 		collection: collection,
@@ -45,7 +46,7 @@ func (ur *userRepository) GetUser(ctx context.Context, param string) ([]*entitie
 		}
 		users = append(users, &user)
 	}
-	if err := cursor.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -63,7 +64,7 @@ func (ur *userRepository) GetUserByID(ctx context.Context, id string) (*entities
 	}
 
 	result := ur.database.Collection(ur.collection).FindOne(ctx, filter)
-	if err := result.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -120,9 +121,6 @@ func (ur *userRepository) GetUserByUsername(ctx context.Context, username string
 	}
 
 	result := ur.database.Collection(ur.collection).FindOne(ctx, filter)
-	if err := result.Err(); err != nil {
-		return nil, err
-	}
 	
 	var user entities.User
 	if err := result.Decode(&user); err != nil {

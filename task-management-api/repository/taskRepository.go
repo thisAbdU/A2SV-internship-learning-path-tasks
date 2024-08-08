@@ -5,21 +5,21 @@ import (
 	"fmt"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
+	"task-management-api/mongo"
 
 	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type taskRepository struct {
-	database   *mongo.Database
+	database   mongo.Database
 	collection string
 }
 
-func NewTaskRepository(database *mongo.Database, collection string) entities.TaskRepository{
+func NewTaskRepository(database mongo.Database, collection string) entities.TaskRepository{
 	return &taskRepository{
 		database:   database,
 		collection: collection,
@@ -49,9 +49,6 @@ func (tr *taskRepository) GetTasks(ctx context.Context, userID string) ([]*model
             Description: task.Description,
             DueDate:     (time.Now()).Add(3 * 24 * time.Hour).Format(time.RFC3339),
         })
-    }
-    if err := cursor.Err(); err != nil {
-        return nil, err
     }
 
     return tasks, nil
@@ -128,13 +125,13 @@ func (tr *taskRepository) DeleteTask(ctx context.Context, id string, userID stri
 		},
 	}
 	
-	result, err := tr.database.Collection(tr.collection).DeleteMany(ctx, filter)
+	numDeleted, err := tr.database.Collection(tr.collection).DeleteMany(ctx, filter)
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
 
-	if result.DeletedCount == 0 {
+	if numDeleted == 0 {
 		return fmt.Errorf("no documents deleted")
 	}
 

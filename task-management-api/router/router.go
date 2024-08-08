@@ -9,10 +9,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
+	"task-management-api/mongo"
+	
 )
 
-func NewAuthRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
+func NewAuthRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.RouterGroup) {
 	userRepository := repository.NewUserRepository(db, "user")
 	authUsecase :=  usecase.NewAuthorizationUsecase(environment, &userRepository)
 	authController := controller.NewAuthController(*environment, *authUsecase)
@@ -21,7 +22,7 @@ func NewAuthRouter(environment *config.Environment, timeout time.Duration, db *m
 	r.POST("/login", authController.Login)
 }
 
-func taskRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
+func taskRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.RouterGroup) {
 	taskRepository := repository.NewTaskRepository(db, "task")
 	taskUseCase := usecase.NewTaskUsecase(environment, &taskRepository)
 	taskController := controller.NewTaskController(*environment, *taskUseCase)
@@ -34,7 +35,7 @@ func taskRouter(environment *config.Environment, timeout time.Duration, db *mong
 }
 
 
-func userRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.RouterGroup) {
+func userRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.RouterGroup) {
 
 	userRepository := repository.NewUserRepository(db, "user")
 	userUseCase := usecase.NewUserUsecase(environment, userRepository)
@@ -46,7 +47,7 @@ func userRouter(environment *config.Environment, timeout time.Duration, db *mong
 	r.DELETE("/:id", userController.DeleteUser).Use(middleware.AuthMiddleware())
 }
 
-func NewRouter(environment *config.Environment, timeout time.Duration, db *mongo.Database, r *gin.Engine) {
+func NewRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.Engine) {
 	authRouter := r.Group("/auth")
 	NewAuthRouter(environment, timeout, db, authRouter)
 
