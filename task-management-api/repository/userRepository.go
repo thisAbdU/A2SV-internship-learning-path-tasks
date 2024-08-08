@@ -44,16 +44,15 @@ func (ur *userRepository) GetUser(ctx context.Context, param string) ([]*entitie
 		if err := cursor.Decode(&user); err != nil {
 			return nil, err
 		}
+
 		users = append(users, &user)
-	}
-	if err != nil {
-		return nil, err
 	}
 
 	return users, nil
 }
 
 func (ur *userRepository) GetUserByID(ctx context.Context, id string) (*entities.User, error) {
+
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
@@ -64,10 +63,7 @@ func (ur *userRepository) GetUserByID(ctx context.Context, id string) (*entities
 	}
 
 	result := ur.database.Collection(ur.collection).FindOne(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
-
+	
 	var user entities.User
 	if err := result.Decode(&user); err != nil {
 		return nil, err

@@ -2,7 +2,6 @@ package repository_test
 
 import (
 	"context"
-	"log"
 	"task-management-api/domain/entities"
 	"task-management-api/mongo/mocks"
 	"task-management-api/repository"
@@ -140,7 +139,6 @@ func TestUpdateTask(t *testing.T) {
     expectedUpdate := bson.M{"$set": bson.M{"title": task.Title, "status": task.Status, "description": task.Description}}
 
     mockDatabase.On("Collection", "tasks").Return(mockCollection)
-    log.Println("Mock collection", mockCollection)
 
     mockUpdateResult := &mongo.UpdateResult{
         MatchedCount: 1,
