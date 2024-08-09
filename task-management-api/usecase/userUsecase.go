@@ -2,20 +2,19 @@ package usecase
 
 import (
 	"context"
-	"task-management-api/config"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
 )
 
 type UserUsecase struct {
 	userRepository entities.UserRepository
-	Environment   *config.Environment
+	// Environment   *config.Environment
 }
 
-func NewUserUsecase(environment *config.Environment, userRepository entities.UserRepository) *UserUsecase {
+func NewUserUsecase(userRepository entities.UserRepository) *UserUsecase {
     return &UserUsecase{
         userRepository: userRepository,
-        Environment:    environment,
+        // Environment:    environment,
     }
 }
 

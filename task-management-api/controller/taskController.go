@@ -24,7 +24,7 @@ func NewTaskController(newEnvironment config.Environment,taskUsecase usecase.Tas
 func (tc *taskcontroller) GetTasks(c *gin.Context) {
     userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Please log in to acess tasks"})
 		return
 	}
 
@@ -41,7 +41,7 @@ func (tc *taskcontroller) GetTasks(c *gin.Context) {
 func (tc *taskcontroller) GetTaskByID(c *gin.Context){
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Please log in to acess tasks"})
 		return
 	}
 
@@ -66,7 +66,7 @@ func (tc *taskcontroller) GetTaskByID(c *gin.Context){
 func (tc *taskcontroller) UpdateTask(c *gin.Context){
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Please log in to acess tasks"})
 		return
 	}
 
@@ -97,7 +97,7 @@ func (tc *taskcontroller) UpdateTask(c *gin.Context){
 func (tc *taskcontroller) DeleteTask(c *gin.Context){
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Please log in to acess tasks"})
 		return
 	}
 
@@ -120,7 +120,7 @@ func (tc *taskcontroller) DeleteTask(c *gin.Context){
 func (tc *taskcontroller) CreateTask(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "User ID not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Please sign up to create a task"})
 		return
 	}
 

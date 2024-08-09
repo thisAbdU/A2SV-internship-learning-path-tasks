@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"log"
+
+	// "log"
 	"task-management-api/config"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
@@ -18,10 +20,9 @@ type AuthorizationUsecase struct {
 	Environment   *config.Environment
 }
 
-func NewAuthorizationUsecase(environment *config.Environment, userRepository entities.UserRepository) *AuthorizationUsecase {
+func NewAuthorizationUsecase(userRepository entities.UserRepository) *AuthorizationUsecase {
 	return &AuthorizationUsecase{
 		userRepository: userRepository,
-		Environment:    environment,
 	}
 }
 
@@ -49,16 +50,15 @@ func (uc *AuthorizationUsecase) Register(userCreate *model.UserCreate) (*model.U
         return nil, errors.New("invalid user data")
     }
 
-    existingUser, err := uc.userRepository.GetUserByID(uc.context, userCreate.ID.Hex())
-    
-    if err.Error() != "mongo: no documents in result" {
-        log.Println(err)
-        return nil, errors.New("registration failed")
-    }    
+    existingUser, err := uc.userRepository.GetUserByUsername(uc.context, userCreate.Username)
+    if err != nil{
+        return nil, err
+    }
 
-    if existingUser != nil {
+    if existingUser.UserName != "" {
         return nil, errors.New("username already exists")
     }
+    log.Println("runing")
 
 
     newUser := &model.UserCreate{

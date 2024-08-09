@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"task-management-api/config"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
 
@@ -14,9 +13,9 @@ type TaskUsecase struct {
 	contextTimeout time.Duration
 }
 
-func NewTaskUsecase(environment *config.Environment, taskRepository *entities.TaskRepository) *TaskUsecase {
+func NewTaskUsecase(taskRepository entities.TaskRepository) *TaskUsecase {
 	return &TaskUsecase{
-		TaskRepository: * taskRepository,
+		TaskRepository: taskRepository,
 		contextTimeout: 3 * time.Second,
 	}
 }

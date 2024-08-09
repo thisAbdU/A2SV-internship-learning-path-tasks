@@ -10,14 +10,19 @@ import (
 )
 
 func main()  {
-	env, err := config.NewEnvironment()
-	if err != nil {
-		log.Println(err)
-		log.Fatal(err)
-	}
+	// env, err := config.NewEnvironment()
+	// if err != nil {
+	// 	log.Println(err)
+	// 	log.Fatal(err)
+	// }
 
-	db, err := config.GetMongoClient(env)
-	if err != nil {
+	// db, err := config.GetMongoClient(env)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	env, db, err := config.Initialize()
+	if err !=  nil{
 		log.Fatal(err)
 	}
 

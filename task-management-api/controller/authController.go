@@ -33,6 +33,12 @@ func (au *authcontroller) Register(c *gin.Context){
 
 	_ , err := au.AuthorizationUsecase.Register(newUser)	
 	if err != nil {
+		
+		if err.Error() == "username already exists" {
+			c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			return
+		}
+
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}

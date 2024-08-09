@@ -2,8 +2,6 @@ package usecase_test
 
 import (
 	"errors"
-	"log"
-	"task-management-api/config"
 	"task-management-api/domain/mocks"
 	"task-management-api/domain/model"
 	"task-management-api/usecase"
@@ -15,11 +13,9 @@ import (
 )
 
 func TestRegister(t *testing.T) {
-	mockUserRepository := new(mocks.UserRepository)
-
-	mockEnvironment := new(mocks.Environment)
-
-	au := usecase.NewAuthorizationUsecase(mockEnvironment, mockUserRepository)
+	mockUserRepository := mocks.NewUserRepository(t)
+	
+	au := usecase.NewAuthorizationUsecase(mockUserRepository)
 
 	userCreate := &model.UserCreate{
 		ID:       primitive.NewObjectID(),

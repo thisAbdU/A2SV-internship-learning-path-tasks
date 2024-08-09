@@ -15,7 +15,7 @@ import (
 
 func NewAuthRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.RouterGroup) {
 	userRepository := repository.NewUserRepository(db, "user")
-	authUsecase :=  usecase.NewAuthorizationUsecase(environment, userRepository)
+	authUsecase :=  usecase.NewAuthorizationUsecase(userRepository)
 	authController := controller.NewAuthController(*environment, *authUsecase)
 
 	r.POST("/register", authController.Register)
@@ -24,7 +24,7 @@ func NewAuthRouter(environment *config.Environment, timeout time.Duration, db mo
 
 func taskRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.RouterGroup) {
 	taskRepository := repository.NewTaskRepository(db, "task")
-	taskUseCase := usecase.NewTaskUsecase(environment, &taskRepository)
+	taskUseCase := usecase.NewTaskUsecase(taskRepository)
 	taskController := controller.NewTaskController(*environment, *taskUseCase)
 
 	r.GET("/", taskController.GetTasks)
@@ -38,7 +38,7 @@ func taskRouter(environment *config.Environment, timeout time.Duration, db mongo
 func userRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.RouterGroup) {
 
 	userRepository := repository.NewUserRepository(db, "user")
-	userUseCase := usecase.NewUserUsecase(environment, userRepository)
+	userUseCase := usecase.NewUserUsecase(userRepository)
 	userController := controller.NewUserController(*environment, *userUseCase)
 
 	r.GET("/", userController.GetUsers)

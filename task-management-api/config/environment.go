@@ -14,21 +14,26 @@ type Environment struct {
 	Port string
 }
 
-func NewEnvironment()(*Environment, error) {
-	err := godotenv.Load()
-	log.Println("I am here")
-	if err != nil {
-		log.Println(err)
-		log.Fatal("Error loading .env file")
-	}
+func NewEnvironment() (*Environment, error) {
+	log.Println("NewEnvironment")
+    goEnv := os.Getenv("GO_ENV")
+    if goEnv != "test" { 
+		log.Println("Loading .env file")
+        err := godotenv.Load()
+        if err != nil {
+            log.Println(err)
+            log.Fatal("Error loading .env file")
+        }
+    }
 
-	return &Environment{
-		DbURL: os.Getenv("DbURL"),
-		DbName: os.Getenv("DbName"),
-		Port: os.Getenv("Port"),
-		JwtKey: os.Getenv("jwtKey"),
-	}, err
+    return &Environment{
+        DbURL:  os.Getenv("DbURL"),
+        DbName: os.Getenv("DbName"),
+        Port:   os.Getenv("Port"),
+        JwtKey: os.Getenv("jwtKey"),
+    }, nil
 }
+
 
 func GetJwtKey() []byte {
 	env, err := NewEnvironment()
@@ -39,4 +44,3 @@ func GetJwtKey() []byte {
 
 	return []byte(env.JwtKey)
 }
-
