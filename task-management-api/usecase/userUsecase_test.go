@@ -111,7 +111,7 @@ func TestUpdateUser(t *testing.T) {
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		err := u.UpdateUser(userID.Hex(), updatedUser)
+		err := u.UpdateUser(context.TODO(), userID.Hex(), updatedUser)
 
 		assert.NoError(t, err)
 
@@ -125,7 +125,7 @@ func TestUpdateUser(t *testing.T) {
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		err := u.UpdateUser(userID.Hex(), updatedUser)
+		err := u.UpdateUser(context.TODO(), userID.Hex(), updatedUser)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedErr, err)
@@ -144,7 +144,7 @@ func TestDeleteUser(t *testing.T) {
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		err := u.DeleteUser(userID)
+		err := u.DeleteUser(context.TODO(), userID)
 
 		assert.NoError(t, err)
 
@@ -158,7 +158,7 @@ func TestDeleteUser(t *testing.T) {
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		err := u.DeleteUser(userID)
+		err := u.DeleteUser(context.TODO(), userID)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedErr, err)
@@ -183,7 +183,7 @@ func TestCreateUser(t *testing.T) {
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		err := u.CreateUser(newUser)
+		err := u.CreateUser(context.TODO(), newUser)
 
 		assert.NoError(t, err)
 
@@ -197,7 +197,7 @@ func TestCreateUser(t *testing.T) {
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		err := u.CreateUser(newUser)
+		err := u.CreateUser(context.TODO(), newUser)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedErr, err)

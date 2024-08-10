@@ -8,13 +8,11 @@ import (
 
 type UserUsecase struct {
 	userRepository entities.UserRepository
-	// Environment   *config.Environment
 }
 
-func NewUserUsecase(userRepository entities.UserRepository) *UserUsecase {
+func NewUserUsecase(userRepository entities.UserRepository) entities.UserUsecase {
     return &UserUsecase{
         userRepository: userRepository,
-        // Environment:    environment,
     }
 }
 
@@ -36,7 +34,7 @@ func (uc *UserUsecase) GetUserByID(ctx context.Context, id string) (*entities.Us
 }
 
 
-func (uc *UserUsecase) UpdateUser(id string, updatedUser entities.User) error {
+func (uc *UserUsecase) UpdateUser(ctx context.Context, id string, updatedUser entities.User) error {
 	err := uc.userRepository.UpdateUser(context.Background(), id, updatedUser)
 	if err != nil {
 		return err
@@ -44,16 +42,16 @@ func (uc *UserUsecase) UpdateUser(id string, updatedUser entities.User) error {
 	return nil
 }
 
-func (uc *UserUsecase) DeleteUser(id string) error {
-	err := uc.userRepository.DeleteUser(context.Background(),id)
+func (uc *UserUsecase) DeleteUser(ctx context.Context, id string) error {
+	err := uc.userRepository.DeleteUser(ctx,id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (uc *UserUsecase) CreateUser(newUser model.UserCreate) error {
-	_, err := uc.userRepository.CreateUser(context.Background(), newUser)
+func (uc *UserUsecase) CreateUser(ctx context.Context, newUser model.UserCreate) error {
+	_, err := uc.userRepository.CreateUser(ctx, newUser)
 	if err != nil {
 		return err
 	}

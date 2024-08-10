@@ -15,7 +15,7 @@ type Token struct {
 
 
 type AuthUseCase interface {
-	Register(currUser AuthenticatedUser, userCreate *model.UserCreate, param any) (*model.UserInfo, string, error)
-	Login(currUser AuthenticatedUser, userLogin *model.UserLogin, param any) (Token, string, error)
-	AdminRegister(currUser AuthenticatedUser, userCreate *model.UserCreate, param any) (*model.UserInfo, string, error)
+	Register(userCreate *model.UserCreate) (*model.UserInfo,error)
+	Login(userLogin *model.UserLogin) (string,error)
+	AdminRegister(currUser AuthenticatedUser, userCreate *model.UserCreate, param any) (*model.UserInfo,error)
 }

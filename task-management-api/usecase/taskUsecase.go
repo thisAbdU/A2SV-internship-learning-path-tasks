@@ -13,7 +13,7 @@ type TaskUsecase struct {
 	contextTimeout time.Duration
 }
 
-func NewTaskUsecase(taskRepository entities.TaskRepository) *TaskUsecase {
+func NewTaskUsecase(taskRepository entities.TaskRepository) entities.TaskUsecase {
 	return &TaskUsecase{
 		TaskRepository: taskRepository,
 		contextTimeout: 3 * time.Second,

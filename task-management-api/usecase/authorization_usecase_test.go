@@ -15,7 +15,7 @@ import (
 func TestRegister(t *testing.T) {
 	mockUserRepository := mocks.NewUserRepository(t)
 	
-	au := usecase.NewAuthorizationUsecase(mockUserRepository)
+	au := usecase.NewAuthUseCase(mockUserRepository)
 
 	userCreate := &model.UserCreate{
 		ID:       primitive.NewObjectID(),

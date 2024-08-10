@@ -4,17 +4,16 @@ import (
 	"net/http"
 	"task-management-api/config"
 	"task-management-api/domain/entities"
-	"task-management-api/usecase"
 
 	"github.com/gin-gonic/gin"
 )
 
 type taskcontroller struct {
-	TaskUsecase usecase.TaskUsecase
+	TaskUsecase entities.TaskUsecase
 	newEnvironment config.Environment
 }
 
-func NewTaskController(newEnvironment config.Environment,taskUsecase usecase.TaskUsecase) *taskcontroller {
+func NewTaskController(newEnvironment config.Environment,taskUsecase entities.TaskUsecase) *taskcontroller {
 	return &taskcontroller{
 		TaskUsecase: taskUsecase,
 		newEnvironment: newEnvironment,
@@ -22,13 +21,19 @@ func NewTaskController(newEnvironment config.Environment,taskUsecase usecase.Tas
 }
 
 func (tc *taskcontroller) GetTasks(c *gin.Context) {
-    userID, exists := c.Get("user_id")
+    userID , exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Please log in to acess tasks"})
 		return
 	}
 
-    tasks, err := tc.TaskUsecase.GetTasks(userID.(string))
+	userIDStr, ok := userID.(string)
+    if !ok {
+        c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
+        return
+    }
+
+    tasks, err := tc.TaskUsecase.GetTasks(userIDStr)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"message": "error retrieving tasks"})
         return
@@ -146,8 +151,3 @@ func (tc *taskcontroller) CreateTask(c *gin.Context) {
 func (tc *taskcontroller) GetEnvironment(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{"environment": tc.newEnvironment})
 }
-
-func (tc *taskcontroller) GetHealth(c *gin.Context){
-	c.JSON(http.StatusOK, gin.H{"status": "healthy"})
-}
-

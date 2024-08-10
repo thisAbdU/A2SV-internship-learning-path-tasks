@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -13,33 +14,30 @@ var (
     once        sync.Once
 )
 
-func GetMongoClient(env *Environment) (mongo.Database, error) {
-    var err error
+func GetMongoClient(env Environment) (mongo.Database, error) {
+	once.Do(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 
-    once.Do(func() {
-        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-        defer cancel()
+		clientOptions, err := mongo.NewClient(env.GetDbURL())
+		err = clientOptions.Connect(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-        client, err := mongo.NewClient(env.DbURL)
-        if err != nil {
-            log.Fatal(err)
-        }
+		err = clientOptions.Ping(ctx)
+		if err != nil {
+			log.Println("Failed to connect to MongoDB")
+			log.Fatal(err)
+		}
 
-        err = client.Connect(ctx)
-        if err != nil {
-            log.Fatal(err)
-        }
+		log.Println("Connected to MongoDB")
+		mongoClient = clientOptions
+	})
 
-        err = client.Ping(ctx)
-        if err != nil {
-            log.Println("Failed to connect to MongoDB")
-            log.Fatal(err)
-        }
+	if mongoClient == nil {
+		return nil, fmt.Errorf("failed to create MongoDB client")
+	}
 
-        log.Println("Connected to MongoDB")
-
-        mongoClient = client
-    })
-
-    return mongoClient.Database(env.DbName), err
+	return mongoClient.Database(env.GetDbName()), nil
 }

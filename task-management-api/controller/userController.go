@@ -6,7 +6,6 @@ import (
 	"task-management-api/config"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
-	"task-management-api/usecase"
 
 	"net/http"
 
@@ -14,11 +13,11 @@ import (
 )
 
 type usercontroller struct {
-	UserUsecase usecase.UserUsecase
+	UserUsecase entities.UserUsecase
 	newEnvironment config.Environment
 }
 
-func NewUserController(newEnvironment config.Environment, userUsecase usecase.UserUsecase) *usercontroller {
+func NewUserController(newEnvironment config.Environment, userUsecase entities.UserUsecase) *usercontroller {
 	return &usercontroller{
 		UserUsecase:   userUsecase,
 		newEnvironment: newEnvironment,
@@ -51,7 +50,8 @@ func (uc *usercontroller) GetUserByID(c *gin.Context) {
 }
 
 func (uc *usercontroller) UpdateUser(c *gin.Context) {
-	
+
+	ctx := context.Background()
 	id := c.Param("id")
 	var updatedUser entities.User
 	if err := c.BindJSON(&updatedUser); err != nil {
@@ -59,7 +59,7 @@ func (uc *usercontroller) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	err := uc.UserUsecase.UpdateUser(id, updatedUser)
+	err := uc.UserUsecase.UpdateUser(ctx, id, updatedUser)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Not Found"})
 		return
@@ -68,8 +68,9 @@ func (uc *usercontroller) UpdateUser(c *gin.Context) {
 
 func (uc *usercontroller) DeleteUser(c *gin.Context) {
 	
+	ctx := context.Background()
 	id := c.Param("id")
-	err := uc.UserUsecase.DeleteUser(id)
+	err := uc.UserUsecase.DeleteUser(ctx, id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
@@ -79,12 +80,14 @@ func (uc *usercontroller) DeleteUser(c *gin.Context) {
 func (uc *usercontroller) CreateUser(c *gin.Context) {
 	
 	var newUser model.UserCreate
+	ctx := context.Background()
+
 	if err := c.BindJSON(&newUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
 		return
 	}
 
-	err := uc.UserUsecase.CreateUser(newUser)
+	err := uc.UserUsecase.CreateUser(ctx, newUser)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return

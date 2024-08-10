@@ -26,9 +26,9 @@ type TaskRepository interface {
 }
 
 type TaskUsecase interface {
-	GetTasks() (*[]*model.TaskInfo, error)
-	GetTaskByID(ctx context.Context, id string, userID string) (*model.TaskInfo, error)
-	UpdateTask(id string, userID string) (*model.TaskUpdate, error)
+	GetTasks(userID string) ([]*model.TaskInfo, error)
+	GetTaskByID(id string, userID string) (*model.TaskInfo, error)
+	UpdateTask(id string, updatedTask Task, userID string) error
 	DeleteTask(id string, userID string) error
 	CreateTask(newTask Task) error
 }

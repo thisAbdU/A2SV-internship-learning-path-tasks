@@ -5,7 +5,7 @@ import (
 	"task-management-api/mongo"
 )
 
-func Initialize() (*Environment, mongo.Database, error){
+func Initialize() (Environment, mongo.Database, error){
 	env, err := NewEnvironment()
 	if err != nil {
 		log.Println(err)

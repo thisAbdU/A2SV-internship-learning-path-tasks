@@ -16,7 +16,7 @@ type AuthUseCase struct {
 }
 
 // AdminRegister provides a mock function with given fields: currUser, userCreate, param
-func (_m *AuthUseCase) AdminRegister(currUser entities.AuthenticatedUser, userCreate *model.UserCreate, param interface{}) (*model.UserInfo, string, error) {
+func (_m *AuthUseCase) AdminRegister(currUser entities.AuthenticatedUser, userCreate *model.UserCreate, param interface{}) (*model.UserInfo, error) {
 	ret := _m.Called(currUser, userCreate, param)
 
 	if len(ret) == 0 {
@@ -24,9 +24,8 @@ func (_m *AuthUseCase) AdminRegister(currUser entities.AuthenticatedUser, userCr
 	}
 
 	var r0 *model.UserInfo
-	var r1 string
-	var r2 error
-	if rf, ok := ret.Get(0).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) (*model.UserInfo, string, error)); ok {
+	var r1 error
+	if rf, ok := ret.Get(0).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) (*model.UserInfo, error)); ok {
 		return rf(currUser, userCreate, param)
 	}
 	if rf, ok := ret.Get(0).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) *model.UserInfo); ok {
@@ -37,91 +36,71 @@ func (_m *AuthUseCase) AdminRegister(currUser entities.AuthenticatedUser, userCr
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) string); ok {
+	if rf, ok := ret.Get(1).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) error); ok {
 		r1 = rf(currUser, userCreate, param)
 	} else {
-		r1 = ret.Get(1).(string)
+		r1 = ret.Error(1)
 	}
 
-	if rf, ok := ret.Get(2).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) error); ok {
-		r2 = rf(currUser, userCreate, param)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
-// Login provides a mock function with given fields: currUser, userLogin, param
-func (_m *AuthUseCase) Login(currUser entities.AuthenticatedUser, userLogin *model.UserLogin, param interface{}) (entities.Token, string, error) {
-	ret := _m.Called(currUser, userLogin, param)
+// Login provides a mock function with given fields: userLogin
+func (_m *AuthUseCase) Login(userLogin *model.UserLogin) (string, error) {
+	ret := _m.Called(userLogin)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Login")
 	}
 
-	var r0 entities.Token
-	var r1 string
-	var r2 error
-	if rf, ok := ret.Get(0).(func(entities.AuthenticatedUser, *model.UserLogin, interface{}) (entities.Token, string, error)); ok {
-		return rf(currUser, userLogin, param)
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*model.UserLogin) (string, error)); ok {
+		return rf(userLogin)
 	}
-	if rf, ok := ret.Get(0).(func(entities.AuthenticatedUser, *model.UserLogin, interface{}) entities.Token); ok {
-		r0 = rf(currUser, userLogin, param)
+	if rf, ok := ret.Get(0).(func(*model.UserLogin) string); ok {
+		r0 = rf(userLogin)
 	} else {
-		r0 = ret.Get(0).(entities.Token)
+		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(entities.AuthenticatedUser, *model.UserLogin, interface{}) string); ok {
-		r1 = rf(currUser, userLogin, param)
+	if rf, ok := ret.Get(1).(func(*model.UserLogin) error); ok {
+		r1 = rf(userLogin)
 	} else {
-		r1 = ret.Get(1).(string)
+		r1 = ret.Error(1)
 	}
 
-	if rf, ok := ret.Get(2).(func(entities.AuthenticatedUser, *model.UserLogin, interface{}) error); ok {
-		r2 = rf(currUser, userLogin, param)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
-// Register provides a mock function with given fields: currUser, userCreate, param
-func (_m *AuthUseCase) Register(currUser entities.AuthenticatedUser, userCreate *model.UserCreate, param interface{}) (*model.UserInfo, string, error) {
-	ret := _m.Called(currUser, userCreate, param)
+// Register provides a mock function with given fields: userCreate
+func (_m *AuthUseCase) Register(userCreate *model.UserCreate) (*model.UserInfo, error) {
+	ret := _m.Called(userCreate)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Register")
 	}
 
 	var r0 *model.UserInfo
-	var r1 string
-	var r2 error
-	if rf, ok := ret.Get(0).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) (*model.UserInfo, string, error)); ok {
-		return rf(currUser, userCreate, param)
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*model.UserCreate) (*model.UserInfo, error)); ok {
+		return rf(userCreate)
 	}
-	if rf, ok := ret.Get(0).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) *model.UserInfo); ok {
-		r0 = rf(currUser, userCreate, param)
+	if rf, ok := ret.Get(0).(func(*model.UserCreate) *model.UserInfo); ok {
+		r0 = rf(userCreate)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.UserInfo)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) string); ok {
-		r1 = rf(currUser, userCreate, param)
+	if rf, ok := ret.Get(1).(func(*model.UserCreate) error); ok {
+		r1 = rf(userCreate)
 	} else {
-		r1 = ret.Get(1).(string)
+		r1 = ret.Error(1)
 	}
 
-	if rf, ok := ret.Get(2).(func(entities.AuthenticatedUser, *model.UserCreate, interface{}) error); ok {
-		r2 = rf(currUser, userCreate, param)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
 // NewAuthUseCase creates a new instance of AuthUseCase. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

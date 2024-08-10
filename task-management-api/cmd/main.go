@@ -10,17 +10,7 @@ import (
 )
 
 func main()  {
-	// env, err := config.NewEnvironment()
-	// if err != nil {
-	// 	log.Println(err)
-	// 	log.Fatal(err)
-	// }
-
-	// db, err := config.GetMongoClient(env)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
+	
 	env, db, err := config.Initialize()
 	if err !=  nil{
 		log.Fatal(err)
@@ -32,11 +22,11 @@ func main()  {
 
 	log.Println("")
 	log.Println("-----------------------------------")
-	log.Println("Server is running on port: " + env.Port)
+	log.Println("Server is running on port: " + env.GetPort())
 	log.Println("Press CTRL + C to stop the server")
 	log.Println("-----------------------------------")
 	log.Println("")
 
-	route.Run(":" + env.Port)
+	route.Run(":" + env.GetPort())
 
 }
