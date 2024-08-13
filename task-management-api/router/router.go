@@ -6,16 +6,18 @@ import (
 	"task-management-api/middleware"
 	"task-management-api/repository"
 	"task-management-api/usecase"
+	"task-management-api/utils"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"task-management-api/mongo"
-	
+
+	"github.com/gin-gonic/gin"
 )
 
 func NewAuthRouter(environment *config.Environment, timeout time.Duration, db mongo.Database, r *gin.RouterGroup) {
 	userRepository := repository.NewUserRepository(db, "user")
-	authUsecase :=  usecase.NewAuthUseCase(userRepository)
+	tokenUtil := utils.NewTokenUtil(environment)
+	authUsecase :=  usecase.NewAuthUseCase(userRepository, tokenUtil)
 	authController := controller.NewAuthController(authUsecase)
 
 	r.POST("/register", authController.Register)

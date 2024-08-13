@@ -56,7 +56,6 @@ func TestGetUsers(t *testing.T) {
 
 func TestGetUserByID(t *testing.T) {
 	mockUserRepository := new(mocks.UserRepository)
-	ctx := context.TODO()
 	userID := primitive.NewObjectID()
 
 	t.Run("success", func(t *testing.T) {
@@ -66,11 +65,11 @@ func TestGetUserByID(t *testing.T) {
 			Password: "123",
 		}
 
-		mockUserRepository.On("GetUserByID", mock.Anything, userID).Return(mockUser, nil).Once()
+		mockUserRepository.On("GetUserByID", mock.Anything, userID.Hex()).Return(mockUser, nil).Once()
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		user, err := u.GetUserByID(ctx, userID.Hex())
+		user, err := u.GetUserByID(context.Background(), userID.Hex())
 
 		assert.NoError(t, err)
 		assert.Equal(t, mockUser, user)
@@ -81,11 +80,11 @@ func TestGetUserByID(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expectedErr := errors.New("repository error")
 
-		mockUserRepository.On("GetUserByID", mock.Anything, userID).Return(nil, expectedErr).Once()
+		mockUserRepository.On("GetUserByID", mock.Anything, userID.Hex()).Return(nil, expectedErr).Once()
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		user, err := u.GetUserByID(ctx, userID.Hex())
+		user, err := u.GetUserByID(context.Background(), userID.Hex())
 
 		assert.Nil(t, user)
 		assert.Error(t, err)
@@ -97,7 +96,7 @@ func TestGetUserByID(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	mockUserRepository := new(mocks.UserRepository)
-	ctx := context.TODO()
+	ctx := context.Background()
 	userID := primitive.NewObjectID()
 
 	updatedUser := entities.User{
@@ -107,11 +106,11 @@ func TestUpdateUser(t *testing.T) {
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockUserRepository.On("UpdateUser", ctx, userID, updatedUser).Return(nil).Once()
+		mockUserRepository.On("UpdateUser", ctx, userID.Hex(), updatedUser).Return(nil).Once()
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		err := u.UpdateUser(context.TODO(), userID.Hex(), updatedUser)
+		err := u.UpdateUser(context.Background(), userID.Hex(), updatedUser)
 
 		assert.NoError(t, err)
 
@@ -121,11 +120,11 @@ func TestUpdateUser(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expectedErr := errors.New("repository error")
 
-		mockUserRepository.On("UpdateUser", ctx, userID, updatedUser).Return(expectedErr).Once()
+		mockUserRepository.On("UpdateUser", ctx, userID.Hex(), updatedUser).Return(expectedErr).Once()
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
-		err := u.UpdateUser(context.TODO(), userID.Hex(), updatedUser)
+		err := u.UpdateUser(context.Background(), userID.Hex(), updatedUser)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedErr, err)
@@ -170,7 +169,10 @@ func TestDeleteUser(t *testing.T) {
 func TestCreateUser(t *testing.T) {
 	mockUserRepository := new(mocks.UserRepository)
 	ctx := context.TODO()
+	userID := primitive.NewObjectID()
+
 	newUser := model.UserCreate{
+		ID: userID,
 		Username: "john_doe",
 		Password: "P@ssw0rd123",
 		Email: "john.doe@example.com",
@@ -178,8 +180,16 @@ func TestCreateUser(t *testing.T) {
 		Bio: "Software engineer with a passion for open-source projects and tech innovations.",
 	}
 
+	newUserInfo := &model.UserInfo{
+
+		Username: newUser.Username,
+		Email: newUser.Email,
+		Name: newUser.Name,
+		ID: newUser.ID.Hex(),
+	}
+
 	t.Run("success", func(t *testing.T) {
-		mockUserRepository.On("CreateUser", ctx, newUser).Return("newUserID", nil).Once()
+		mockUserRepository.On("CreateUser", ctx, newUser).Return(newUserInfo, nil).Once()
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 
@@ -193,7 +203,7 @@ func TestCreateUser(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expectedErr := errors.New("repository error")
 
-		mockUserRepository.On("CreateUser", ctx, newUser).Return("", expectedErr).Once()
+		mockUserRepository.On("CreateUser", ctx, newUser).Return(nil, expectedErr).Once()
 
 		u := usecase.NewUserUsecase(mockUserRepository)
 

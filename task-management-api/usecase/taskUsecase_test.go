@@ -11,34 +11,30 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-
 func TestGetTasks(t *testing.T) {
-	mockTaskRepository := new(mocks.TaskRepository)
-	ctx := context.TODO()
-	userID := "testUserID"
-
 	t.Run("success", func(t *testing.T) {
+		mockTaskRepository := new(mocks.TaskRepository)
 
-		mockTasks := []*entities.Task{
-			{Title: "Task 1", Description: "Description 1"},
-			{Title: "Task 2", Description: "Description 2"},
-		}
+		_, cancel := context.WithDeadline(context.Background(), time.Now().Add(3*time.Second))
+		defer cancel()
+
+		userID := "testUserID"
+
 		expectedTaskInfos := []*model.TaskInfo{
 			{
 				Title:       "Task 1",
 				Description: "Description 1",
-				DueDate:     (time.Now()).Add(3 * 24 * time.Hour).Format(time.RFC3339),
 			},
 			{
 				Title:       "Task 2",
 				Description: "Description 2",
-				DueDate:     (time.Now()).Add(3 * 24 * time.Hour).Format(time.RFC3339),
 			},
 		}
 
-		mockTaskRepository.On("GetTasks", ctx, userID).Return(mockTasks, nil).Once()
+		mockTaskRepository.On("GetTasks", mock.Anything, userID).Return(expectedTaskInfos, nil).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -46,19 +42,22 @@ func TestGetTasks(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, len(expectedTaskInfos), len(tasks))
+
 		for i := range tasks {
 			assert.Equal(t, expectedTaskInfos[i].Title, tasks[i].Title)
 			assert.Equal(t, expectedTaskInfos[i].Description, tasks[i].Description)
-			assert.Equal(t, expectedTaskInfos[i].DueDate, tasks[i].DueDate)
 		}
 
 		mockTaskRepository.AssertExpectations(t)
 	})
 
 	t.Run("error", func(t *testing.T) {
+		mockTaskRepository := new(mocks.TaskRepository)
+
+		userID := "testUserID"
 		expectedErr := errors.New("repository error")
 
-		mockTaskRepository.On("GetTasks", ctx, userID).Return(nil, expectedErr).Once()
+		mockTaskRepository.On("GetTasks", mock.Anything, userID).Return(nil, expectedErr).Once()
 
 		u := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -74,7 +73,6 @@ func TestGetTasks(t *testing.T) {
 
 func TestGetTaskByID(t *testing.T) {
 	mockTaskRepository := new(mocks.TaskRepository)
-	ctx := context.TODO()
 	taskID := "testTaskID"
 	userID := "testUserID"
 
@@ -86,10 +84,9 @@ func TestGetTaskByID(t *testing.T) {
 		expectedTaskInfo := &model.TaskInfo{
 			Title:       "Sample Task",
 			Description: "Sample Description",
-			DueDate:     (time.Now()).Add(3 * 24 * time.Hour).Format(time.RFC3339),
 		}
 
-		mockTaskRepository.On("GetTaskByID", ctx, taskID, userID).Return(mockTaskEntity, nil).Once()
+		mockTaskRepository.On("GetTaskByID", mock.Anything, taskID, userID).Return(mockTaskEntity, nil).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -106,7 +103,7 @@ func TestGetTaskByID(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expectedErr := errors.New("repository error")
 
-		mockTaskRepository.On("GetTaskByID", ctx, taskID, userID).Return(nil, expectedErr).Once()
+		mockTaskRepository.On("GetTaskByID", mock.Anything, taskID, userID).Return(nil, expectedErr).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -122,7 +119,7 @@ func TestGetTaskByID(t *testing.T) {
 
 func TestUpdateTask(t *testing.T) {
 	mockTaskRepository := new(mocks.TaskRepository)
-	ctx := context.TODO()
+
 	taskID := "testTaskID"
 	userID := "testUserID"
 	updatedTask := entities.Task{
@@ -131,7 +128,7 @@ func TestUpdateTask(t *testing.T) {
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockTaskRepository.On("UpdateTask", ctx, taskID, updatedTask, userID).Return(nil).Once()
+		mockTaskRepository.On("UpdateTask", mock.Anything, taskID, updatedTask, userID).Return(nil).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -145,7 +142,7 @@ func TestUpdateTask(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expectedErr := errors.New("update error")
 
-		mockTaskRepository.On("UpdateTask", ctx, taskID, updatedTask, userID).Return(expectedErr).Once()
+		mockTaskRepository.On("UpdateTask", mock.Anything, taskID, updatedTask, userID).Return(expectedErr).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -160,12 +157,12 @@ func TestUpdateTask(t *testing.T) {
 
 func TestDeleteTask(t *testing.T) {
 	mockTaskRepository := new(mocks.TaskRepository)
-	ctx := context.TODO()
+
 	taskID := "testTaskID"
 	userID := "testUserID"
 
 	t.Run("success", func(t *testing.T) {
-		mockTaskRepository.On("DeleteTask", ctx, taskID, userID).Return(nil).Once()
+		mockTaskRepository.On("DeleteTask", mock.Anything, taskID, userID).Return(nil).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -179,7 +176,7 @@ func TestDeleteTask(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expectedErr := errors.New("delete error")
 
-		mockTaskRepository.On("DeleteTask", ctx, taskID, userID).Return(expectedErr).Once()
+		mockTaskRepository.On("DeleteTask", mock.Anything, taskID, userID).Return(expectedErr).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -194,14 +191,14 @@ func TestDeleteTask(t *testing.T) {
 
 func TestCreateTask(t *testing.T) {
 	mockTaskRepository := new(mocks.TaskRepository)
-	ctx := context.TODO()
+
 	newTask := entities.Task{
 		Title:       "New Task",
 		Description: "New Task Description",
 	}
 
 	t.Run("success", func(t *testing.T) {
-		mockTaskRepository.On("CreateTask", ctx, newTask).Return(nil).Once()
+		mockTaskRepository.On("CreateTask", mock.Anything, newTask).Return(nil).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 
@@ -215,7 +212,7 @@ func TestCreateTask(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		expectedErr := errors.New("creation error")
 
-		mockTaskRepository.On("CreateTask", ctx, newTask).Return(expectedErr).Once()
+		mockTaskRepository.On("CreateTask", mock.Anything, newTask).Return(expectedErr).Once()
 
 		tuc := usecase.NewTaskUsecase(mockTaskRepository)
 

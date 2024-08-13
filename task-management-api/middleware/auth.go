@@ -3,40 +3,13 @@ package middleware
 import (
 	"net/http"
 	"strings"
-	"task-management-api/config"
-	"time"
+	"task-management-api/domain/entities"
+	"task-management-api/utils"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
-type Claims struct {
-	UserID string `json:"user_id"`
-	jwt.StandardClaims
-}
-
-var jwtKey = config.GetJwtKey()
-
-func GenerateToken(s string) (string, error) {
-	expirationTime := time.Now().Add(24 * time.Hour)
-
-	claims := &Claims{
-		UserID: s,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-			IssuedAt:  time.Now().Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	tokenString, err := token.SignedString(jwtKey)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
-}
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -54,9 +27,9 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims := &Claims{}
+		claims := &entities.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return jwtKey, nil
+			return utils.GetJwtKey(), nil
 		})
 		if err != nil || !token.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})

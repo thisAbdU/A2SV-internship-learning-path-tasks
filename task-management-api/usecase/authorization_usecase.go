@@ -6,20 +6,22 @@ import (
 
 	"task-management-api/domain/entities"
 	"task-management-api/domain/model"
-	"task-management-api/middleware"
 	"task-management-api/mongo"
+	"task-management-api/utils"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type authUseCase struct {
 	userRepository entities.UserRepository
+	utils          utils.Utils
     context        context.Context
 }
 
-func NewAuthUseCase(userRepo entities.UserRepository) entities.AuthUseCase {
+func NewAuthUseCase(userRepo entities.UserRepository, utils utils.Utils) entities.AuthUseCase {
 	return &authUseCase{
 		userRepository: userRepo,
+		utils: utils,
         context:       context.TODO(),
 	}
 }
@@ -34,7 +36,7 @@ func (uc *authUseCase) Login(userLogin *model.UserLogin) (string, error) {
 		return "", errors.New("invalid Password")
 	}
 
-	token, err := middleware.GenerateToken(user.ID.Hex())
+	token, err := uc.utils.GenerateToken(user.ID.Hex())
 	if err != nil {
 		return "", errors.New("token Generation Failed")
 	}
