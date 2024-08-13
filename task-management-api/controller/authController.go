@@ -36,7 +36,6 @@ func (au *Authcontroller) Register(c *gin.Context){
 			return
 		}
 		
-		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}

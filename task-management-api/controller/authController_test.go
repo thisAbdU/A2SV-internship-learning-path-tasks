@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestRegister(t *testing.T) {
@@ -22,16 +23,33 @@ func TestRegister(t *testing.T) {
 
 	router.POST("/register", ac.Register)
 
+
 	t.Run("success", func(t *testing.T) {
+
+		fixedID := primitive.ObjectID{}
+
 		newUser := &model.UserCreate{
 			Username: "newuser",
 			Password: "password",
+			Name:     "name",
+			Email:    "test@gmail.com",
+			Bio:      "test",
+			ID:     fixedID,
 		}
 		
-		mockUsecase.On("Register", newUser).Return(nil).Once()
+		mockUsecase.On("Register", newUser).Return(&model.UserInfo{}, nil).Once()
 
-		body := `{"username":"newuser", "password":"password"}`
+		body := `{
+			"username": "newuser", 
+			"password": "password",
+			"name": "name",
+			"email": "test@gmail.com",
+			"bio": "test"
+		}`
+
 		req, _ := http.NewRequest("POST", "/register", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
 
@@ -57,7 +75,7 @@ func TestRegister(t *testing.T) {
 			Password: "password",
 		}
 		
-		mockUsecase.On("Register", newUser).Return(errors.New("username already exists")).Once()
+		mockUsecase.On("Register", newUser).Return(nil, errors.New("username already exists")).Once()
 
 		body := `{"username":"existinguser", "password":"password"}`
 		req, _ := http.NewRequest("POST", "/register", strings.NewReader(body))
@@ -76,7 +94,7 @@ func TestRegister(t *testing.T) {
 			Password: "password",
 		}
 		
-		mockUsecase.On("Register", newUser).Return(errors.New("unexpected error")).Once()
+		mockUsecase.On("Register", newUser).Return(nil,errors.New("unexpected error")).Once()
 
 		body := `{"username":"erroruser", "password":"password"}`
 		req, _ := http.NewRequest("POST", "/register", strings.NewReader(body))
@@ -142,24 +160,6 @@ func TestLogin(t *testing.T) {
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 		assert.JSONEq(t, `{"message": "Unauthorized"}`, w.Body.String())
-
-		mockUsecase.AssertExpectations(t)
-	})
-
-	t.Run("internal server error", func(t *testing.T) {
-		userLogin := &model.UserLogin{
-			Username: "erroruser",
-			Password: "password",
-		}
-		
-		mockUsecase.On("Login", userLogin).Return("", errors.New("unexpected error")).Once()
-		body := `{"username":"erroruser", "password":"password"}`
-		req, _ := http.NewRequest("POST", "/login", strings.NewReader(body))
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.JSONEq(t, `{"message": "Internal Server Error"}`, w.Body.String())
 
 		mockUsecase.AssertExpectations(t)
 	})

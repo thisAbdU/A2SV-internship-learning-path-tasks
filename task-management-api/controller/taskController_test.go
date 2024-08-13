@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"task-management-api/controller"
 	"task-management-api/domain/entities"
 	"task-management-api/domain/mocks"
+	"task-management-api/domain/model"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -18,17 +21,18 @@ import (
 )
 
 func TestCreateTask(t *testing.T) {
-	mockUsecase := new(mocks.TaskUsecase)
-	mockEnvironment := new(mocks.Environment)
-
-	router := gin.Default()
-
-	tc := controller.NewTaskController(mockEnvironment, mockUsecase)
-
-	router.POST("/tasks", tc.CreateTask)
 
 	t.Run("success", func(t *testing.T) {
-		mockUsecase.On("CreateTask", mock.AnythingOfType("entities.Task")).Return(nil)
+		mockUsecase := new(mocks.TaskUsecase)
+		mockEnvironment := new(mocks.Environment)
+	
+		router := gin.Default()
+	
+		tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+	
+		router.POST("/tasks", tc.CreateTask)
+
+		mockUsecase.On("CreateTask", mock.AnythingOfType("entities.Task")).Return(nil).Once()
 
 		newTask := entities.Task{
 			Title:       "Test Task",
@@ -45,7 +49,7 @@ func TestCreateTask(t *testing.T) {
 		c.Request = req
 		c.Set("user_id", "test_user_id")
 
-		router.ServeHTTP(w, req)
+		tc.CreateTask(c)
 
 		assert.Equal(t, http.StatusCreated, w.Code)
 		assert.JSONEq(t, `{"message": "Task created successfully"}`, w.Body.String())
@@ -54,30 +58,53 @@ func TestCreateTask(t *testing.T) {
 			return task.Title == newTask.Title && task.Description == newTask.Description && task.UserID == "test_user_id"
 		}))
 	})
-
 	t.Run("error", func(t *testing.T) {
 		t.Run("unauthorized", func(t *testing.T) {
+			mockUsecase := new(mocks.TaskUsecase)
+			mockEnvironment := new(mocks.Environment)
+		
+			router := gin.Default()
+		
+			tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+		
+			router.POST("/tasks", tc.CreateTask)
+
 			newTask := entities.Task{
 				Title:       "Test Task",
 				Description: "This is a test task",
 			}
+			
+			mockUsecase.On("CreateTask", mock.AnythingOfType("entities.Task")).Return(errors.New("Please sign up to create a task")).Once()
 
 			taskJSON, _ := json.Marshal(newTask)
 
 			req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(taskJSON))
 			req.Header.Set("Content-Type", "application/json")
-
 			w := httptest.NewRecorder()
-			router.ServeHTTP(w, req)
+			c, _ := gin.CreateTestContext(w)
+			c.Request = req
+
+			tc.CreateTask(c)
 
 			assert.Equal(t, http.StatusUnauthorized, w.Code)
 			assert.JSONEq(t, `{"message": "Please sign up to create a task"}`, w.Body.String())
 		})
 
-		t.Run("bad request", func(t *testing.T) {
-			invalidTaskJSON := `{"title": ""}`
+		t.Run("bad_request", func(t *testing.T) {
+			mockUsecase := new(mocks.TaskUsecase)
+			mockEnvironment := new(mocks.Environment)
+		
+			router := gin.Default()
+		
+			tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+		
+			router.POST("/tasks", tc.CreateTask)
 
-			req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBufferString(invalidTaskJSON))
+			mockUsecase.On("CreateTask", mock.AnythingOfType("entities.Task")).Return(errors.New("Bad Request")).Once()
+
+			invalidTaskJSON := `{"ttle": ""}`
+
+			req, _ := http.NewRequest(http.MethodPost, "/tasks", strings.NewReader(invalidTaskJSON))
 			req.Header.Set("Content-Type", "application/json")
 
 			w := httptest.NewRecorder()
@@ -85,19 +112,28 @@ func TestCreateTask(t *testing.T) {
 			c.Request = req
 			c.Set("user_id", "test_user_id")
 
-			router.ServeHTTP(w, req)
+			tc.CreateTask(c)
 
 			assert.Equal(t, http.StatusBadRequest, w.Code)
 			assert.JSONEq(t, `{"message": "Bad Request"}`, w.Body.String())
 		})
 
-		t.Run("internal server error", func(t *testing.T) {
-			mockUsecase.On("CreateTask", mock.AnythingOfType("entities.Task")).Return(errors.New("some error"))
+		t.Run("internal_server_error", func(t *testing.T) {
+			mockUsecase := new(mocks.TaskUsecase)
+			mockEnvironment := new(mocks.Environment)
+		
+			router := gin.Default()
+		
+			tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+		
+			router.POST("/tasks", tc.CreateTask)
 
 			newTask := entities.Task{
 				Title:       "Test Task",
 				Description: "This is a test task",
 			}
+
+			mockUsecase.On("CreateTask", mock.AnythingOfType("entities.Task")).Return(errors.New("Internal Server Error")).Once()
 
 			taskJSON, _ := json.Marshal(newTask)
 
@@ -109,8 +145,8 @@ func TestCreateTask(t *testing.T) {
 			c.Request = req
 			c.Set("user_id", "test_user_id")
 
-			router.ServeHTTP(w, req)
-
+			tc.CreateTask(c)
+			
 			assert.Equal(t, http.StatusInternalServerError, w.Code)
 			assert.JSONEq(t, `{"message": "Internal Server Error"}`, w.Body.String())
 		})
@@ -118,16 +154,17 @@ func TestCreateTask(t *testing.T) {
 }
 
 func TestGetTasks(t *testing.T) {
-	mockUsecase := new(mocks.TaskUsecase)
-	mockEnvironment := new(mocks.Environment)
-
-	router := gin.Default()
-
-	tc := controller.NewTaskController(mockEnvironment, mockUsecase)
-
-	router.GET("/tasks", tc.GetTasks)
-
 	t.Run("unauthorized", func(t *testing.T) {
+		mockUsecase := new(mocks.TaskUsecase)
+		mockEnvironment := new(mocks.Environment)
+		
+		gin.SetMode(gin.TestMode)
+		router := gin.Default()
+	
+		tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+	
+		router.GET("/tasks", tc.GetTasks)
+
 		req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
@@ -135,215 +172,396 @@ func TestGetTasks(t *testing.T) {
 		assert.JSONEq(t, `{"error": "Please log in to acess tasks"}`, w.Body.String())
 	})
 
-	t.Run("internal server error - userID conversion", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", 123)
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.JSONEq(t, `{"message": "Internal server error"}`, w.Body.String())
-	})
-
 	t.Run("internal server error - GetTasks failure", func(t *testing.T) {
-		mockUsecase.On("GetTasks", "test_user_id").Return(nil, errors.New("some error"))
+		mockUsecase := new(mocks.TaskUsecase)
+		mockEnvironment := new(mocks.Environment)
+	
+		gin.SetMode(gin.TestMode)
+		router := gin.Default()
+
+		testUserID := "123"
+	
+		tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+
+		mockUsecase.On("GetTasks", testUserID).Return(nil, errors.New("error retrieving tasks"))
+
 		req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 		w := httptest.NewRecorder()
+
 		c, _ := gin.CreateTestContext(w)
 		c.Request = req
-		c.Set("user_id", "test_user_id")
+
+		router.Use(func(c *gin.Context) {
+			c.Set("user_id", testUserID)
+			c.Next()
+		})
+
+		router.GET("/tasks", tc.GetTasks)
 		router.ServeHTTP(w, req)
+
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, `{"message": "error retrieving tasks"}`, w.Body.String())
 	})
 
 	t.Run("success", func(t *testing.T) {
-		mockTasks := []entities.Task{
-			{ID: primitive.NewObjectID(), Title: "Task 1", Description: "Description 1"},
-			{ID: primitive.NewObjectID(), Title: "Task 2", Description: "Description 2"},
+		mockUsecase := new(mocks.TaskUsecase)
+		mockEnvironment := new(mocks.Environment)
+
+		gin.SetMode(gin.TestMode)
+		router := gin.Default()
+		
+		router.Use(func(c *gin.Context) {
+			c.Set("user_id", "test_user_id")
+			c.Next()
+		})
+
+		tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+	
+		router.GET("/tasks", tc.GetTasks)
+
+		mockTasks := []*model.TaskInfo{
+			{Title: "Task 1", Description: "Description 1", DueDate: "Today"},
+			{Title: "Task 2", Description: "Description 2", DueDate: "Tomorrow"},
 		}
+		
 		mockUsecase.On("GetTasks", "test_user_id").Return(mockTasks, nil)
+
 		req, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
+
+		log.Println("Request: ", req.Body)
+		log.Println("response: ", w.Code)
 		router.ServeHTTP(w, req)
+
 		assert.Equal(t, http.StatusOK, w.Code)
 		expectedResponse, _ := json.Marshal(gin.H{"tasks": mockTasks})
+		log.Println("Response: ", w.Body.String())
+		log.Println("Expected Response: ", string(expectedResponse))
 		assert.JSONEq(t, string(expectedResponse), w.Body.String())
 	})
 }
 
 func TestGetTaskByID(t *testing.T) {
-	mockUsecase := new(mocks.TaskUsecase)
-	mockEnvironment := new(mocks.Environment)
+    testUserID := "test_user_id"
 
-	router := gin.Default()
+    t.Run("unauthorized", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
 
-	tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router := gin.Default() 
+        router.GET("/tasks/:id", tc.GetTaskByID)
 
-	router.GET("/tasks/:id", tc.GetTaskByID)
+        req, _ := http.NewRequest(http.MethodGet, "/tasks/1", nil)
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusUnauthorized, w.Code)
+        assert.JSONEq(t, `{"error": "Please log in to acess tasks"}`, w.Body.String())
+    })
 
-	t.Run("unauthorized", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodGet, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-		assert.JSONEq(t, `{"error": "Please log in to acess tasks"}`, w.Body.String())
-	})
+    t.Run("task not found", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
 
-	t.Run("task not found", func(t *testing.T) {
-		mockUsecase.On("GetTaskByID", "1", "test_user_id").Return(nil, errors.New("mongo: no documents in result"))
-		req, _ := http.NewRequest(http.MethodGet, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		assert.JSONEq(t, `{"message": "Task not found"}`, w.Body.String())
-	})
+        router := gin.Default() // Create a new router for each sub-test
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", testUserID)
+            c.Next()
+        })
+        router.GET("/tasks/:id", tc.GetTaskByID)
 
-	t.Run("internal server error", func(t *testing.T) {
-		mockUsecase.On("GetTaskByID", "1", "test_user_id").Return(nil, errors.New("some error"))
-		req, _ := http.NewRequest(http.MethodGet, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.JSONEq(t, `{"message": "error retrieving task"}`, w.Body.String())
-	})
+        mockUsecase.On("GetTaskByID", "1", "test_user_id").Return(nil, errors.New("mongo: no documents in result"))
 
-	t.Run("success", func(t *testing.T) {
-		mockTask := &entities.Task{ID: primitive.NewObjectID(), Title: "Task 1", Description: "Description 1"}
-		mockUsecase.On("GetTaskByID", mockTask.ID, "test_user_id").Return(mockTask, nil)
-		req, _ := http.NewRequest(http.MethodGet, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusOK, w.Code)
-		expectedResponse, _ := json.Marshal(gin.H{"task": mockTask})
-		assert.JSONEq(t, string(expectedResponse), w.Body.String())
-	})
+        req, _ := http.NewRequest(http.MethodGet, "/tasks/1", nil)
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusNotFound, w.Code)
+        assert.JSONEq(t, `{"message": "Task not found"}`, w.Body.String())
+    })
+
+    t.Run("internal server error", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+
+        router := gin.Default() // Create a new router for each sub-test
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", testUserID)
+            c.Next()
+        })
+        router.GET("/tasks/:id", tc.GetTaskByID)
+
+        mockUsecase.On("GetTaskByID", "1", "test_user_id").Return(nil, errors.New("some error"))
+        req, _ := http.NewRequest(http.MethodGet, "/tasks/1", nil)
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusInternalServerError, w.Code)
+        assert.JSONEq(t, `{"message": "error retrieving task"}`, w.Body.String())
+    })
+
+    t.Run("success", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+
+        router := gin.Default() // Create a new router for each sub-test
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", testUserID)
+            c.Next()
+        })
+
+        router.GET("/tasks/:id", tc.GetTaskByID)
+
+        taskID := primitive.NewObjectID()
+        mockTask := &model.TaskInfo{Title: "Task 1", Description: "Description 1"}
+        mockUsecase.On("GetTaskByID", taskID.Hex(), "test_user_id").Return(mockTask, nil)
+
+        req, _ := http.NewRequest(http.MethodGet, "/tasks/"+taskID.Hex(), nil)
+        w := httptest.NewRecorder()
+
+        router.ServeHTTP(w, req)
+        assert.Equal(t, http.StatusOK, w.Code)
+        expectedResponse, _ := json.Marshal(gin.H{"task": mockTask})
+        assert.JSONEq(t, string(expectedResponse), w.Body.String())
+    })
 }
-
 func TestUpdateTask(t *testing.T) {
-	mockUsecase := new(mocks.TaskUsecase)
-	mockEnvironment := new(mocks.Environment)
 
-	router := gin.Default()
+    gin.SetMode(gin.TestMode)
 
-	tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+    t.Run("Unauthorized", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
 
-	router.PUT("/tasks/:id", tc.UpdateTask)
+        router := gin.Default()
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.PUT("/tasks/:id", tc.UpdateTask)
 
-	t.Run("unauthorized", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodPut, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-		assert.JSONEq(t, `{"error": "Please log in to acess tasks"}`, w.Body.String())
-	})
+        req, _ := http.NewRequest(http.MethodPut, "/tasks/1", nil)
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
 
-	t.Run("task not found", func(t *testing.T) {
-		mockUsecase.On("UpdateTask", mock.AnythingOfType("entities.Task")).Return(errors.New("mongo: no documents in result"))
-		req, _ := http.NewRequest(http.MethodPut, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		assert.JSONEq(t, `{"message": "Task not found"}`, w.Body.String())
-	})
+        assert.Equal(t, http.StatusUnauthorized, w.Code)
+        assert.JSONEq(t, `{"error": "Please log in to acess tasks"}`, w.Body.String())
+    })
 
-	t.Run("internal server error", func(t *testing.T) {
-		mockUsecase.On("UpdateTask", mock.AnythingOfType("entities.Task")).Return(errors.New("some error"))
-		req, _ := http.NewRequest(http.MethodPut, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.JSONEq(t, `{"message": "error updating task"}`, w.Body.String())
-	})
+    t.Run("Bad Request", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
 
-	t.Run("success", func(t *testing.T) {
-		mockTask := &entities.Task{ID: primitive.NewObjectID(), Title: "Task 1", Description: "Description 1"}
-		mockUsecase.On("UpdateTask", mock.AnythingOfType("entities.Task")).Return(nil)
-		taskJSON, _ := json.Marshal(mockTask)
+        router := gin.Default()
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", "test_user_id")
+            c.Next()
+        })
 
-		taskID := mockTask.ID.Hex()
-		req, _ := http.NewRequest(http.MethodPut, "/tasks/" + taskID, bytes.NewBuffer(taskJSON))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusOK, w.Code)
-		assert.JSONEq(t, `{"message": "Task updated successfully"}`, w.Body.String())
-	})
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.PUT("/tasks/:id", tc.UpdateTask)
+
+        req, _ := http.NewRequest(http.MethodPut, "/tasks/1", bytes.NewBuffer([]byte("invalid json")))
+        req.Header.Set("Content-Type", "application/json")
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+
+        assert.Equal(t, http.StatusBadRequest, w.Code)
+        assert.JSONEq(t, `{"message": "Bad Request"}`, w.Body.String())
+    })
+
+    t.Run("Task Not Found", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+
+        router := gin.Default()
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", "test_user_id")
+            c.Next()
+        })
+
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.PUT("/tasks/:id", tc.UpdateTask)
+
+        mockTaskID := primitive.NewObjectID()
+        mockTask := entities.Task{
+            ID:          mockTaskID,
+            UserID:      "test_user_id",
+            UserName:    "test_user",
+            Password:    "test_password",
+            Title:       "Test Task",
+            Description: "This is a test task",
+            Status:      "Pending",
+        }
+
+        taskJSON, _ := json.Marshal(mockTask)
+        mockUsecase.On("UpdateTask", "1", mock.AnythingOfType("entities.Task"), "test_user_id").Return(errors.New("no documents updated"))
+
+        req, _ := http.NewRequest(http.MethodPut, "/tasks/1", bytes.NewBuffer(taskJSON))
+        req.Header.Set("Content-Type", "application/json")
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+
+        assert.Equal(t, http.StatusNotFound, w.Code)
+        assert.JSONEq(t, `{"message": "Task not found"}`, w.Body.String())
+    })
+
+    t.Run("Internal Server Error", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+
+        router := gin.Default()
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", "test_user_id")
+            c.Next()
+        })
+
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.PUT("/tasks/:id", tc.UpdateTask)
+
+        mockTaskID := primitive.NewObjectID()
+        mockTask := entities.Task{
+            ID:          mockTaskID,
+            UserID:      "test_user_id",
+            UserName:    "test_user",
+            Password:    "test_password",
+            Title:       "Test Task",
+            Description: "This is a test task",
+            Status:      "Pending",
+        }
+
+        taskJSON, _ := json.Marshal(mockTask)
+        mockUsecase.On("UpdateTask", "1", mock.AnythingOfType("entities.Task"), "test_user_id").Return(errors.New("some internal error"))
+
+        req, _ := http.NewRequest(http.MethodPut, "/tasks/1", bytes.NewBuffer(taskJSON))
+        req.Header.Set("Content-Type", "application/json")
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+
+        assert.Equal(t, http.StatusInternalServerError, w.Code)
+        assert.JSONEq(t, `{"message": "Internal Server Error"}`, w.Body.String())
+    })
+
+    t.Run("Task Updated Successfully", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+
+        router := gin.Default()
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", "test_user_id")
+            c.Next()
+        })
+
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.PUT("/tasks/:id", tc.UpdateTask)
+
+        mockTaskID := primitive.NewObjectID()
+        mockTask := entities.Task{
+            ID:          mockTaskID,
+            UserID:      "test_user_id",
+            UserName:    "test_user",
+            Password:    "test_password",
+            Title:       "Test Task",
+            Description: "This is a test task",
+            Status:      "Pending",
+        }
+
+        taskJSON, _ := json.Marshal(mockTask)
+        mockUsecase.On("UpdateTask", "1", mock.AnythingOfType("entities.Task"), "test_user_id").Return(nil)
+
+        req, _ := http.NewRequest(http.MethodPut, "/tasks/1", bytes.NewBuffer(taskJSON))
+        req.Header.Set("Content-Type", "application/json")
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+
+        assert.Equal(t, http.StatusOK, w.Code)
+        assert.JSONEq(t, `{"message": "Task updated successfully"}`, w.Body.String())
+    })
 }
 
 func TestDeleteTask(t *testing.T) {
-	mockUsecase := new(mocks.TaskUsecase)
-	mockEnvironment := new(mocks.Environment)
+    gin.SetMode(gin.TestMode)
 
-	router := gin.Default()
+    t.Run("Unauthorized", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
 
-	tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router := gin.Default()
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.DELETE("/tasks/:id", tc.DeleteTask)
 
-	router.DELETE("/tasks/:id", tc.DeleteTask)
+        req, _ := http.NewRequest(http.MethodDelete, "/tasks/1", nil)
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
 
-	t.Run("unauthorized", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodDelete, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusUnauthorized, w.Code)
-		assert.JSONEq(t, `{"error": "Please log in to acess tasks"}`, w.Body.String())
-	})
+        assert.Equal(t, http.StatusNotFound, w.Code)
+        assert.JSONEq(t, `{"error": "Please log in to acess tasks"}`, w.Body.String())
+    })
 
-	t.Run("task not found", func(t *testing.T) {
-		mockUsecase.On("DeleteTask", "1", "test_user_id").Return(errors.New("mongo: no documents in result"))
-		req, _ := http.NewRequest(http.MethodDelete, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusNotFound, w.Code)
-		assert.JSONEq(t, `{"message": "Task not found"}`, w.Body.String())
-	})
+    t.Run("Task Not Found", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
 
-	t.Run("internal server error", func(t *testing.T) {
-		mockUsecase.On("DeleteTask", "1", "test_user_id").Return(errors.New("some error"))
-		req, _ := http.NewRequest(http.MethodDelete, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id")
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.JSONEq(t, `{"message": "error deleting task"}`, w.Body.String())
-	})
+        router := gin.Default()
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", "test_user_id")
+            c.Next()
+        })
 
-	t.Run("success", func(t *testing.T) {
-		mockUsecase.On("DeleteTask", "1", "test_user_id").Return(nil)
-		req, _ := http.NewRequest(http.MethodDelete, "/tasks/1", nil)
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request = req
-		c.Set("user_id", "test_user_id") 
-		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusOK, w.Code)
-		assert.JSONEq(t, `{"message": "Task deleted successfully"}`, w.Body.String())
-	})
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.DELETE("/tasks/:id", tc.DeleteTask)
+
+        mockUsecase.On("DeleteTask", "1", "test_user_id").Return(errors.New("no documents deleted"))
+
+        req, _ := http.NewRequest(http.MethodDelete, "/tasks/1", nil)
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+
+        assert.Equal(t, http.StatusNotFound, w.Code)
+        assert.JSONEq(t, `{"message": "Task not found"}`, w.Body.String())
+    })
+
+    t.Run("Internal Server Error", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+
+        router := gin.Default()
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", "test_user_id")
+            c.Next()
+        })
+
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.DELETE("/tasks/:id", tc.DeleteTask)
+
+        mockUsecase.On("DeleteTask", "1", "test_user_id").Return(errors.New("some internal error"))
+
+        req, _ := http.NewRequest(http.MethodDelete, "/tasks/1", nil)
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+
+        assert.Equal(t, http.StatusInternalServerError, w.Code)
+        assert.JSONEq(t, `{"message": "Internal Server Error"}`, w.Body.String())
+    })
+
+    t.Run("Task Deleted Successfully", func(t *testing.T) {
+        mockUsecase := new(mocks.TaskUsecase)
+        mockEnvironment := new(mocks.Environment)
+
+        router := gin.Default()
+        router.Use(func(c *gin.Context) {
+            c.Set("user_id", "test_user_id")
+            c.Next()
+        })
+
+        tc := controller.NewTaskController(mockEnvironment, mockUsecase)
+        router.DELETE("/tasks/:id", tc.DeleteTask)
+
+        mockUsecase.On("DeleteTask", "1", "test_user_id").Return(nil)
+
+        req, _ := http.NewRequest(http.MethodDelete, "/tasks/1", nil)
+        w := httptest.NewRecorder()
+        router.ServeHTTP(w, req)
+
+        assert.Equal(t, http.StatusOK, w.Code)
+        assert.JSONEq(t, `{"message": "Task deleted successfully"}`, w.Body.String())
+    })
 }

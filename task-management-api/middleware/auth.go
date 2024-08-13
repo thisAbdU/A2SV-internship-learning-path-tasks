@@ -68,3 +68,10 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func SetUserID(userID string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("user_id", userID)
+		c.Next()
+	}
+}

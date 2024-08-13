@@ -84,16 +84,14 @@ func (tc *taskcontroller) UpdateTask(c *gin.Context){
 		return
 	}
 
-	err := tc.TaskUsecase.UpdateTask(id, updatedTask, userID.(string))
-	if err != nil {
-
-		if err.Error() == "no documents updated" {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Task is the same"})
-			return
-		}
-
-		c.JSON(http.StatusNotFound, gin.H{"message": "Not Found"})
-		return
+    err := tc.TaskUsecase.UpdateTask(id, updatedTask, userID.(string))
+    if err != nil {
+        if err.Error() == "no documents updated" {
+            c.JSON(http.StatusNotFound, gin.H{"message": "Task not found"})
+            return
+        }
+        c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+        return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Task updated successfully"})
@@ -121,10 +119,9 @@ func (tc *taskcontroller) DeleteTask(c *gin.Context){
 
 	c.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
 }
-
 func (tc *taskcontroller) CreateTask(c *gin.Context) {
 	userID, exists := c.Get("user_id")
-	if !exists {
+	if !exists || userID == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Please sign up to create a task"})
 		return
 	}
@@ -140,7 +137,16 @@ func (tc *taskcontroller) CreateTask(c *gin.Context) {
 
 	err := tc.TaskUsecase.CreateTask(newTask)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+		switch err.Error() {
+		case "Please sign up to create a task":
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "Please sign up to create a task"})
+			return
+		case "Bad Request":
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
+			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+		}
 		return
 	}
 
